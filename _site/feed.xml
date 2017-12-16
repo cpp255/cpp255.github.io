@@ -1,525 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2017-12-16T15:44:03+08:00</updated><id>http://localhost:4000/</id><title type="html">tarda</title><subtitle>的个人博客&quot;</subtitle><author><name>tarda</name></author><entry><title type="html">Jedis 订阅事件阻塞</title><link href="http://localhost:4000/2017/12/15/Jedis-Keyevent/" rel="alternate" type="text/html" title="Jedis 订阅事件阻塞" /><published>2017-12-15T20:20:20+08:00</published><updated>2017-12-15T20:20:20+08:00</updated><id>http://localhost:4000/2017/12/15/Jedis-Keyevent</id><content type="html" xml:base="http://localhost:4000/2017/12/15/Jedis-Keyevent/">&lt;h1 id=&quot;jedis-订阅事件阻塞&quot;&gt;Jedis 订阅事件阻塞&lt;/h1&gt;
-&lt;p&gt;Jedis 开启订阅事件的时候是这样的：&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;psubscribe&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;JedisPubSub&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;jedisPubSub&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;    &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;patterns&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;checkIsInMulti&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;connect&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 连接server，底层是通过socket进行连接 client.setTimeoutInfinite(); jedisPubSub.proceedWithPatterns(client, patterns);  // 主要是这里 client.rollbackTimeout();    }&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;调用JedisPubSub的代码，process() 方法里面是一个 do while 循环，所以这里肯定会阻塞，只能通过开辟另一个线程进行订阅，否则整个程序就会被阻塞在这里进行循环：&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;proceedWithPatterns&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Client&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;patterns&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;client&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// 发送订阅指令，类似上面的 psubscribe '__keyevent*__:*' client.psubscribe(patterns);  client.flush(); process(client); // 实时处理返回的指令信息 }&lt;/span&gt;
-
-
-&lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;process&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Client&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-		&lt;span class=&quot;c1&quot;&gt;// 取得响应回来的数据     List&amp;lt;Object&amp;gt; reply = client.getRawObjectMultiBulkReply();     final Object firstObj = reply.get(0);     if (!(firstObj instanceof byte[])) { 	throw new JedisException(&quot;Unknown message type: &quot; + firstObj);     }     final byte[] resp = (byte[]) firstObj;     if (Arrays.equals(SUBSCRIBE.raw, resp)) { 	subscribedChannels = ((Long) reply.get(2)).intValue(); 	final byte[] bchannel = (byte[]) reply.get(1); 	final String strchannel = (bchannel == null) ? null 		: SafeEncoder.encode(bchannel); 	onSubscribe(strchannel, subscribedChannels);     } else if (Arrays.equals(UNSUBSCRIBE.raw, resp)) { 	subscribedChannels = ((Long) reply.get(2)).intValue(); 	final byte[] bchannel = (byte[]) reply.get(1); 	final String strchannel = (bchannel == null) ? null 		: SafeEncoder.encode(bchannel); 	onUnsubscribe(strchannel, subscribedChannels);     } else if (Arrays.equals(MESSAGE.raw, resp)) { 	final byte[] bchannel = (byte[]) reply.get(1); 	final byte[] bmesg = (byte[]) reply.get(2); 	final String strchannel = (bchannel == null) ? null 		: SafeEncoder.encode(bchannel); 	final String strmesg = (bmesg == null) ? null : SafeEncoder 		.encode(bmesg); 	onMessage(strchannel, strmesg);     } else if (Arrays.equals(PMESSAGE.raw, resp)) { 	final byte[] bpattern = (byte[]) reply.get(1); 	final byte[] bchannel = (byte[]) reply.get(2); 	final byte[] bmesg = (byte[]) reply.get(3); 	final String strpattern = (bpattern == null) ? null 		: SafeEncoder.encode(bpattern); 	final String strchannel = (bchannel == null) ? null 		: SafeEncoder.encode(bchannel); 	final String strmesg = (bmesg == null) ? null : SafeEncoder 		.encode(bmesg); 	onPMessage(strpattern, strchannel, strmesg);     } else if (Arrays.equals(PSUBSCRIBE.raw, resp)) { 	subscribedChannels = ((Long) reply.get(2)).intValue(); 	final byte[] bpattern = (byte[]) reply.get(1); 	final String strpattern = (bpattern == null) ? null 		: SafeEncoder.encode(bpattern); 	onPSubscribe(strpattern, subscribedChannels);     } else if (Arrays.equals(PUNSUBSCRIBE.raw, resp)) { 	subscribedChannels = ((Long) reply.get(2)).intValue(); 	final byte[] bpattern = (byte[]) reply.get(1); 	final String strpattern = (bpattern == null) ? null 		: SafeEncoder.encode(bpattern); 	onPUnsubscribe(strpattern, subscribedChannels);     } else { 	throw new JedisException(&quot;Unknown message type: &quot; + firstObj);     } } while (isSubscribed());  /* Invalidate instance since this thread is no longer listening */ this.client = null;  /*  * Reset pipeline count because subscribe() calls would have increased  * it but nothing decremented it.  */ client.resetPipelinedCount();    }&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;设置一个线程单独运行该订阅事件：&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;ExecutorService&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;executor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Executors&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;newSingleThreadExecutor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Runnable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;subRunnable&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Runnable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;	&lt;span class=&quot;nd&quot;&gt;@Override&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;	&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;		&lt;span class=&quot;c1&quot;&gt;// TODO 添加订阅事件处理 	} }; executor.execute(subRunnable);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>tarda</name></author><category term="Redis,Java,Spring" /><summary type="html">Jedis 订阅事件阻塞 Jedis 开启订阅事件的时候是这样的： public void psubscribe(final JedisPubSub jedisPubSub,  final String... patterns) { checkIsInMulti(); connect(); // 连接server，底层是通过socket进行连接 client.setTimeoutInfinite(); jedisPubSub.proceedWithPatterns(client, patterns); // 主要是这里 client.rollbackTimeout();  }</summary></entry><entry><title type="html">Redis 事件监听</title><link href="http://localhost:4000/2017/12/14/Redis-Keyevent/" rel="alternate" type="text/html" title="Redis 事件监听" /><published>2017-12-14T20:20:20+08:00</published><updated>2017-12-14T20:20:20+08:00</updated><id>http://localhost:4000/2017/12/14/Redis-Keyevent</id><content type="html" xml:base="http://localhost:4000/2017/12/14/Redis-Keyevent/">&lt;h1 id=&quot;redis-事件监听&quot;&gt;Redis 事件监听&lt;/h1&gt;
-&lt;hr /&gt;
-
-&lt;p&gt;2.8 以后的版本开始支持事件监听，由于开启会消耗CPU资源，默认关闭。&lt;br /&gt;
-开启事件支持有两种方式：服务端配置和客户端配置；服务端的配置是永久有效的，客户端的配置重启后会失效。服务端开启事件支持后，客户端就可以开始订阅服务端推送的事件监听。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;事件类型&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;K     Keyspace events, published with __keyspace@&amp;lt;db&amp;gt;__ prefix.
-E     Keyevent events, published with __keyevent@&amp;lt;db&amp;gt;__ prefix.
-g     Generic commands (non-type specific) like DEL, EXPIRE, RENAME, ...
-$     String commands
-l     List commands
-s     Set commands
-h     Hash commands
-z     Sorted set commands
-x     Expired events (events generated every time a key expires)
-e     Evicted events (events generated when a key is evicted for maxmemory)
-A     Alias for g$lshzxe, so that the &quot;AKE&quot; string means all the events.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;1.服务端在 redis.conf 中打开事件监听配置，再重启redis服务，这里使用的是接收所有类型，就是”A”，具体使用的话可以随意替换类型；注意启动的时候是否使用当前目录修改的 redis.conf&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;notify-keyspace-events &quot;EA&quot;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;重启 redis：&lt;/p&gt;
-
-&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;./src/redis-server redis.conf
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;客户端&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; redis-cli config set notify-keyspace-events KEA
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;如果只监听删除、过期和因为内存过大被删除的，则模式可以选择为： Egxe&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;客户端接收订阅事件&lt;/strong&gt;&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;psubscribe '__keyevent*__:*'  // 订阅所有事件
-psubscribe __keyevent@0__:del  // 订阅数据库0的del事件
-psubscribe __keyevent@0__:expired  // 订阅数据库0的expired事件
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;jedis 接收订阅事件，继承 JedisPubSub 类，在实现的方法里面接收处理的逻辑:&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// 接收订阅事件&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;onPMessage&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pattern&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;channel&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;注册订阅事件，pattern 跟客户端订阅事件一样，可以添加不同的订阅事件，也可以添加多个事件，例如：&lt;strong&gt;keyevent@0&lt;/strong&gt;:del；注册订阅事件是阻塞操作，建议单独生成另一个线程。&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;Jedis&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;jedis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;jedis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;psubscribe&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;jedisPubSub&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pattern&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;参考：
-1 http://redisdoc.com/topic/notification.html &lt;br /&gt;
-2 https://redis.io/topics/notifications&lt;/p&gt;</content><author><name>tarda</name></author><category term="Redis,Java" /><summary type="html">Redis 事件监听</summary></entry><entry><title type="html">sql 引发的 dubbo 超时</title><link href="http://localhost:4000/2017/05/21/sql_low_to_dubbo/" rel="alternate" type="text/html" title="sql 引发的 dubbo 超时" /><published>2017-05-22T07:27:10+08:00</published><updated>2017-05-22T07:27:10+08:00</updated><id>http://localhost:4000/2017/05/21/sql_low_to_dubbo</id><content type="html" xml:base="http://localhost:4000/2017/05/21/sql_low_to_dubbo/">&lt;h1 id=&quot;sql-引发的-dubbo-超时&quot;&gt;sql 引发的 dubbo 超时&lt;/h1&gt;
-&lt;hr /&gt;
-&lt;p&gt;最近在对已有项目进行分离，用了 dubbo，分离之后发现有个接口请求超时了，Google 后找到：http://www.cnblogs.com/binyue/p/5380322.html，文章说有两个解决办法：&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;找出耗时最多的方法，调优。&lt;/li&gt;
-  &lt;li&gt;加大超时时间。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;跑代码，调试后发现，一般跑一次接口调用运行查询时间都为 4s+ 了，肯定超时。 &lt;br /&gt;
-解决办法：
-1.加大 dubbo 的超时时间：&lt;/p&gt;
-&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;dubbo:reference&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;xxDubboService&quot;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;                 &lt;span class=&quot;na&quot;&gt;interface=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;com.xx.service.xxService&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;version=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;1.0&quot;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;                 &lt;span class=&quot;na&quot;&gt;group=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;annotationConfig&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;protocol=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;dubbo&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;check=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;false&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;timeout=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;5000&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;dubbo 默认超时时间(timeout)为1s，增加为5s.这时测试已经可以运行，只是等待时间会比较长。&lt;/p&gt;
-
-&lt;p&gt;2.调优 &lt;br /&gt;
-不满足，继续优化，接口代码中有7次 sql 查询，第一次的 sql 查询出一个列表，列表长度为30，然后一个for循环，每一次循环内部有6次sql查询，打印时间，发现时间都耗在了这个for循环的sql执行上。 &lt;br /&gt;
-查看sql代码，sql 的查询都是必要的操作，删除不了。其中，有3个sql操作是通过查询3个表，循序的通过范式获取数据，返回给java，通过在java层进行数据调用，然后再继续调用sql查询；并且每次查询都是获取所有的数据，然后只取了其中的一个属性。&lt;/p&gt;
-&lt;h5 id=&quot;优化合并sql消减获取列&quot;&gt;优化–合并sql，消减获取列&lt;/h5&gt;
-&lt;p&gt;把上面提到的3个sql合并成了一个，使用join查询，降低连接次数，并且把sql查询结果集缩小，只收集需要的数据。 &lt;br /&gt;
-这次结果效果惊人，查询时间减到了2s以下。这种合并其实还有一个好处，spring 注入生成的dao少了，连接需要的线程少了，jvm 的内存申请也少。&lt;/p&gt;
-&lt;h5 id=&quot;优化前端把分页值调低&quot;&gt;优化–前端把分页值调低&lt;/h5&gt;
-&lt;p&gt;分页毕竟没有硬性要求，把前端请求的分页大小改小，之前的为30改为20，时间再缩小到1.2～1.5s左右，可以接受。&lt;/p&gt;
-
-&lt;h5 id=&quot;优化todo&quot;&gt;优化–TODO&lt;/h5&gt;
-&lt;p&gt;后期如果继续优化，可以试着对索引方向着手，估计可以再减一两百毫秒。这个业务使用场景并不高，这些工作暂时还没有继续往下深挖，有空了可以继续搞(估计就瞎扯，项目忙起来没有头).&lt;/p&gt;
-
-&lt;h3 id=&quot;总结&quot;&gt;总结&lt;/h3&gt;
-&lt;p&gt;分拆成几个子任务在我这个例子中，已经明显消耗太多时间了，再通过这么一个for循环，查询连接，时间消耗更大。但是几个表用 join 的方式消除一些子任务，写法还是得用 EXPLAIN 查看一下，看下查询方式是否得不偿失。&lt;/p&gt;</content><author><name>tarda</name></author><category term="dubbo,mysql,java" /><summary type="html">sql 引发的 dubbo 超时 最近在对已有项目进行分离，用了 dubbo，分离之后发现有个接口请求超时了，Google 后找到：http://www.cnblogs.com/binyue/p/5380322.html，文章说有两个解决办法： 找出耗时最多的方法，调优。 加大超时时间。</summary></entry><entry><title type="html">Android Activity 源码解析</title><link href="http://localhost:4000/2015/03/22/android_activity/" rel="alternate" type="text/html" title="Android Activity 源码解析" /><published>2015-03-23T00:01:00+08:00</published><updated>2015-03-23T00:01:00+08:00</updated><id>http://localhost:4000/2015/03/22/android_activity</id><content type="html" xml:base="http://localhost:4000/2015/03/22/android_activity/">&lt;h1 id=&quot;android-activity-源码解析&quot;&gt;Android Activity 源码解析&lt;/h1&gt;
-&lt;hr /&gt;
-&lt;p&gt;Activity 是用得最多的了，平时也只是熟练的使用，知道 launchMode、intent-filte、screenOrientation，然后看下官网的资料，7个步骤，如何切换这些。现在就读一下底层的源码吧。&lt;/p&gt;
-
-&lt;p&gt;类注释中就有很好的说明了，按例，先从类注释开始，主要有这些&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  * &amp;lt;p&amp;gt;Topics covered here:
- * &amp;lt;ol&amp;gt;
- * &amp;lt;li&amp;gt;&amp;lt;a href=&quot;#Fragments&quot;&amp;gt;Fragments&amp;lt;/a&amp;gt;
- * &amp;lt;li&amp;gt;&amp;lt;a href=&quot;#ActivityLifecycle&quot;&amp;gt;Activity Lifecycle&amp;lt;/a&amp;gt;
- * &amp;lt;li&amp;gt;&amp;lt;a href=&quot;#ConfigurationChanges&quot;&amp;gt;Configuration Changes&amp;lt;/a&amp;gt;
- * &amp;lt;li&amp;gt;&amp;lt;a href=&quot;#StartingActivities&quot;&amp;gt;Starting Activities and Getting Results&amp;lt;/a&amp;gt;
- * &amp;lt;li&amp;gt;&amp;lt;a href=&quot;#SavingPersistentState&quot;&amp;gt;Saving Persistent State&amp;lt;/a&amp;gt;
- * &amp;lt;li&amp;gt;&amp;lt;a href=&quot;#Permissions&quot;&amp;gt;Permissions&amp;lt;/a&amp;gt;
- * &amp;lt;li&amp;gt;&amp;lt;a href=&quot;#ProcessLifecycle&quot;&amp;gt;Process Lifecycle&amp;lt;/a&amp;gt;
- * &amp;lt;/ol&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Activity 生命周期的7个方法：&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &amp;lt;pre class=&quot;prettyprint&quot;&amp;gt;
- * public class Activity extends ApplicationContext {
- *     protected void onCreate(Bundle savedInstanceState);
- *
- *     protected void onStart();
- *     
- *     protected void onRestart();
- *
- *     protected void onResume();
- *
- *     protected void onPause();
- *
- *     protected void onStop();
- *
- *     protected void onDestroy();
- * }
- * &amp;lt;/pre&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;捡关键的来说：&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;onResume() &amp;lt;td&amp;gt;Called when the activity will interacting with the user.  At this point your activity is at the top of the activity stack, with user input going to  &amp;lt;p&amp;gt;Always followed by &amp;lt;code&amp;gt;onPause()&amp;lt;/code&amp;gt;.&amp;lt;/td&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;onResume()的方法调用后，就会放在 activity stack 的栈顶，用户就可以进行交互。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Unless you specify otherwise, a configuration change (such as a change
- * in screen orientation, language, input devices, etc) will cause your
- * current activity to be &amp;lt;em&amp;gt;destroyed&amp;lt;/em&amp;gt;, going through the normal activity
- * lifecycle process of {@link #onPause},
- * {@link #onStop}, and {@link #onDestroy} as appropriate.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;屏幕方向切换、系统语言、输入设备将会引起当前的 activity 调用 destroyed()。&lt;/p&gt;
-
-&lt;p&gt;###代码：
-类继承结构&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;java.lang.Object   
-   ↳	android.content.Context   
- 	   ↳	android.content.ContextWrapper   
- 	 	   ↳	android.view.ContextThemeWrapper   
- 	 	 	   ↳	android.app.Activity
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>tarda</name></author><category term="Android,Activity" /><summary type="html">Android Activity 源码解析 Activity 是用得最多的了，平时也只是熟练的使用，知道 launchMode、intent-filte、screenOrientation，然后看下官网的资料，7个步骤，如何切换这些。现在就读一下底层的源码吧。</summary></entry><entry><title type="html">Android-Universal-Image-Loader disk 缓存图片更改</title><link href="http://localhost:4000/2015/03/13/android-universal-image-loader(disk_cache_modify)/" rel="alternate" type="text/html" title="Android-Universal-Image-Loader disk 缓存图片更改" /><published>2015-03-13T00:00:00+08:00</published><updated>2015-03-13T00:00:00+08:00</updated><id>http://localhost:4000/2015/03/13/android-universal-image-loader(disk_cache_modify)</id><content type="html" xml:base="http://localhost:4000/2015/03/13/android-universal-image-loader(disk_cache_modify)/">&lt;h1 id=&quot;android-universal-image-loader缓存图片更改&quot;&gt;Android-Universal-Image-Loader缓存图片更改&lt;/h1&gt;
-&lt;hr /&gt;
-&lt;p&gt;之前在论坛上看到过介绍 &lt;a href=&quot;https://github.com/bither/bither-android-lib&quot;&gt;bither-android-lib&lt;/a&gt; 这个工程，主要是说 Android 现有的图片缓存机制比较老，效果不好，然后替换成这个工程，作者说有测试过，效果会比较好。我也拿来做测试了，没看出来。想着可以把平时用的图片的加载库替换掉 &lt;a href=&quot;https://github.com/nostra13/Android-Universal-Image-Loader&quot;&gt;Android-Universal-Image-Loader&lt;/a&gt;。&lt;/p&gt;
-
-&lt;h3 id=&quot;1-修改依赖库中的保存代码&quot;&gt;1. 修改依赖库中的保存代码&lt;/h3&gt;
-
-&lt;p&gt;1.把 use-libjpeg-trubo-adnroid 工程下 net.bither.util 包下的 NativeUtil.java 拷贝到 Android-Universal-Image-Loader 工程下 library 的工程com.nostra13.universalimageloader.utilsb 包中；&lt;/p&gt;
-
-&lt;p&gt;2.找到 com.nostra13.universalimageloader.cache.disc.impl 包下的 BaseDiskCache.java 类，重写其中的两个保存方法(源代码中注释掉的为之前版本库的代码)：&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;@Override
-	public boolean save(String imageUri, InputStream imageStream, IoUtils.CopyListener listener) throws IOException {
-		File imageFile = getFile(imageUri);
-		File tmpFile = new File(imageFile.getAbsolutePath() + TEMP_IMAGE_POSTFIX);
-		boolean loaded = false;
-		try {
-			OutputStream os = new BufferedOutputStream(new FileOutputStream(tmpFile), bufferSize);
-			try {
-//				loaded = IoUtils.copyStream(imageStream, os, listener, bufferSize);
-				// 同样的方式保存，未返回结果标志
-				Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
-				save(imageUri, bitmap);
-			} finally {
-				IoUtils.closeSilently(os);
-			}
-		} finally {
-			if (loaded &amp;amp;&amp;amp; !tmpFile.renameTo(imageFile)) {
-				loaded = false;
-			}
-			if (!loaded) {
-				tmpFile.delete();
-			}
-		}
-		return loaded;
-	}
-
-	@Override
-	public boolean save(String imageUri, Bitmap bitmap) throws IOException {
-		File imageFile = getFile(imageUri);
-		File tmpFile = new File(imageFile.getAbsolutePath() + TEMP_IMAGE_POSTFIX);
-		OutputStream os = new BufferedOutputStream(new FileOutputStream(tmpFile), bufferSize);
-		boolean savedSuccessfully = false;
-		try {
-//			savedSuccessfully = bitmap.compress(compressFormat, compressQuality, os);
-			// 重写图片保存
-			NativeUtil.compressBitmap(bitmap, compressQuality,
-					imageFile.getAbsolutePath(), true);
-		} finally {
-			IoUtils.closeSilently(os);
-			if (savedSuccessfully &amp;amp;&amp;amp; !tmpFile.renameTo(imageFile)) {
-				savedSuccessfully = false;
-			}
-			if (!savedSuccessfully) {
-				tmpFile.delete();
-			}
-		}
-		bitmap.recycle();
-		return savedSuccessfully;
-	}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;maven-so-打包&quot;&gt;maven .so 打包&lt;/h3&gt;
-
-&lt;p&gt;需要把 armeabi/ 下的.so 打包成第三方 .jar 包。&lt;/p&gt;
-
-&lt;h5 id=&quot;1-mvn-install-so文件&quot;&gt;1. mvn install .so文件&lt;/h5&gt;
-&lt;p&gt;先把 armeabi/ 文件夹连同下面的 .so 文件拷到当前项目组的 libs/ 下，然后用 install 的方式把环境配置到本地的 maven 环境。我当前有2个 .so 需要配置，命令如下：&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;libbitherjni.so&lt;/strong&gt;&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ mvn install:install-file -DgroupId=net.bither -DartifactId=libbitherjni -Dversion=v1 -Dfile=/Users/cpp255/git/Android-Universal-Image-Loader/library/libs/armeabi/libbitherjni.so -Dpackaging=so -DgeneratePom=true -Dclassifier=armeabi  
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;libjpegbither.so&lt;/strong&gt;&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ mvn install:install-file -DgroupId=net.bither -DartifactId=libjpegbither -Dversion=v1 -Dfile=/Users/mac-600672/git/Android-Universal-Image-Loader/library/libs/armeabi/libjpegbither.so -Dpackaging=so -DgeneratePom=true -Dclassifier=armeabi  
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;执行上述命令后会提示 success.&lt;/p&gt;
-
-&lt;h5 id=&quot;2-配置-pomxml&quot;&gt;2. 配置 pom.xml&lt;/h5&gt;
-&lt;p&gt;按照步骤1的完成配置后，则可以在 pom.xml 文件中配置这两个包的信息了&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;libbitherjni.so&lt;/strong&gt;&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;dependencies&amp;gt;
-	&amp;lt;dependency&amp;gt;
-          &amp;lt;groupId&amp;gt;net.bither&amp;lt;/groupId&amp;gt;
-           &amp;lt;artifactId&amp;gt;libbitherjni&amp;lt;/artifactId&amp;gt;
-           &amp;lt;version&amp;gt;v1&amp;lt;/version&amp;gt;
-           &amp;lt;classifier&amp;gt;armeabi&amp;lt;/classifier&amp;gt;
-            &amp;lt;scope&amp;gt;runtime&amp;lt;/scope&amp;gt;
-            &amp;lt;type&amp;gt;so&amp;lt;/type&amp;gt;
-  	/dependency&amp;gt;
-&amp;lt;/dependencies&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;libjpegbither.so&lt;/strong&gt;&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;dependencies&amp;gt;
-	&amp;lt;dependency&amp;gt;
-          &amp;lt;groupId&amp;gt;net.bither&amp;lt;/groupId&amp;gt;
-           &amp;lt;artifactId&amp;gt;libjpegbither&amp;lt;/artifactId&amp;gt;
-           &amp;lt;version&amp;gt;v1&amp;lt;/version&amp;gt;
-           &amp;lt;classifier&amp;gt;armeabi&amp;lt;/classifier&amp;gt;
-            &amp;lt;scope&amp;gt;runtime&amp;lt;/scope&amp;gt;
-            &amp;lt;type&amp;gt;so&amp;lt;/type&amp;gt;
-  	&amp;lt;/dependency&amp;gt;
-&amp;lt;/dependencies&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;然后执行打包命令，整个过程就结束了：&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ mvn clean package
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;修改的项目工程为: &lt;a href=&quot;https://github.com/cpp255/Android-Universal-Image-Loader&quot;&gt;cpp255/Android-Universal-Image-Loader&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;参考：&lt;/p&gt;
-
-&lt;p&gt;1.&lt;a href=&quot;http://www.mkyong.com/maven/how-to-include-library-manully-into-maven-local-repository/&quot;&gt;How To Include Custom Library Into Maven Local Repository?&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;2.&lt;a href=&quot;http://keepcleargas.bitbucket.org/android/2014/04/01/using-maven-to-package-android.html&quot;&gt;使用maven构建android项目&lt;/a&gt;&lt;/p&gt;</content><author><name>tarda</name></author><summary type="html">Android-Universal-Image-Loader缓存图片更改 之前在论坛上看到过介绍 bither-android-lib 这个工程，主要是说 Android 现有的图片缓存机制比较老，效果不好，然后替换成这个工程，作者说有测试过，效果会比较好。我也拿来做测试了，没看出来。想着可以把平时用的图片的加载库替换掉 Android-Universal-Image-Loader。</summary></entry><entry><title type="html">Eventbus 使用</title><link href="http://localhost:4000/2015/03/09/eventbus_use/" rel="alternate" type="text/html" title="Eventbus 使用" /><published>2015-03-10T07:38:10+08:00</published><updated>2015-03-10T07:38:10+08:00</updated><id>http://localhost:4000/2015/03/09/eventbus_use</id><content type="html" xml:base="http://localhost:4000/2015/03/09/eventbus_use/">&lt;h1 id=&quot;eventbus&quot;&gt;Eventbus&lt;/h1&gt;
-&lt;hr /&gt;
-&lt;p&gt;Android 开发中，平时用多了 BroadcastReceiver 或者 Intent 进行事件分发，可以试试 &lt;a href=&quot;https://github.com/greenrobot/EventBus&quot;&gt;Eventbus&lt;/a&gt;,进行封装再使用，简洁、快速，效果拔群。&lt;/p&gt;
-
-&lt;p&gt;Eventbus 的使用比较简单，只需要一个事件接收方，一个事件发送方。就是简单的订阅者模式，只要有消息发送，订阅了该消息的对象就可以收到。Eventbus 支持 Activity、Fragment 做为订阅者，只要如下简单的注册即可接收消息，下面的代码我做了一下封装，只要继承这两个类，默认都可以接收到消息：&lt;/p&gt;
-
-&lt;h3 id=&quot;1消息注册&quot;&gt;1.消息注册&lt;/h3&gt;
-
-&lt;h5 id=&quot;activity-注册使用方式&quot;&gt;Activity 注册使用方式：&lt;/h5&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;import android.os.Bundle;
-
-
-import de.greenrobot.event.EventBus;
-
-
-/**
- * ClassName: MessageEventDispatchActivity.java &amp;lt;/br&amp;gt;
- * Function: 事件消息注册 Activity &amp;lt;/br&amp;gt;
- * @author jdk
- * @date 2014-11-3
- * @Version: 1.0
- */
- 
-public abstract class MessageEventDispatchActivity extends Activity{
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		// 类似BroadcastReceiver，在开始时要注册一次
-		EventBus.getDefault().register(this);
-	}
-
-	@Override
-	protected void onDestroy() {
-		System.gc();
-		super.onDestroy();
-		// 同样的，结束的时候也要取消订阅
-		EventBus.getDefault().unregister(this);
-	}
-
-	/**
-	 * 需要使用的消息接收方法
-	 * 
-	 * @param message 这个类为我封装的消息类，最简单的可以替换成任意类(如 String)
-	 */
-	public abstract void onEvent(EventMessage message);
-}
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h5 id=&quot;fragment-注册使用方式&quot;&gt;Fragment 注册使用方式：&lt;/h5&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;import de.greenrobot.event.EventBus;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-
-/**
- * ClassName: MessageEventDispatchFragment.java &amp;lt;/br&amp;gt;
- * Function: 事件消息注册 Fragment &amp;lt;/br&amp;gt;
- * @author jdk
- * @date 2014-11-3
- * @Version: 1.0
- */
-public abstract class MessageEventDispatchFragment extends Fragment {
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		EventBus.getDefault().register(this);
-	}
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		EventBus.getDefault().unregister(this);
-	}
-
-	/**
-	 * 需要使用的消息接收方法
-	 * 
-	 * @param message
-	 */
-	public abstract void onEvent(EventMessage message);
-}
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;###2.消息处理&lt;/p&gt;
-
-&lt;p&gt;步骤1注册完接收方式后，就要进行消息处理了，只要订阅了，消息发送都会发送给 onEvent() 方法，这个时候就要在这个方法中进行消息过滤或者处理了。&lt;/p&gt;
-
-&lt;p&gt;###3.消息发送
-前面2个步骤只是做好了收到消息的准备，消息还需要发送，最简单的消息发送如下&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// message如步骤1中所示，是我定义好的，也可以用其他任意类型。
-EventBus.getDefault().post(message);
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这只是简单是使用。具体的还可以玩出各中花样，我现在的工程中，使用这个来做全局消息分发，首先做一个消息封装，通过这个消息可以携带各类型的信息、协议信息，然后通过 http(volley、async-http)请求、IM 的 socket 通信进行消的封装，从而可以减少代码耦合、提高复用性。等有时间，再把这个封装抽象出来，单独写一次。&lt;/p&gt;</content><author><name>tarda</name></author><category term="Android,Eventbus" /><summary type="html">Eventbus Android 开发中，平时用多了 BroadcastReceiver 或者 Intent 进行事件分发，可以试试 Eventbus,进行封装再使用，简洁、快速，效果拔群。 Eventbus 的使用比较简单，只需要一个事件接收方，一个事件发送方。就是简单的订阅者模式，只要有消息发送，订阅了该消息的对象就可以收到。Eventbus 支持 Activity、Fragment 做为订阅者，只要如下简单的注册即可接收消息，下面的代码我做了一下封装，只要继承这两个类，默认都可以接收到消息： 1.消息注册 Activity 注册使用方式： import android.os.Bundle; import de.greenrobot.event.EventBus; /** * ClassName: MessageEventDispatchActivity.java &amp;lt;/br&amp;gt; * Function: 事件消息注册 Activity &amp;lt;/br&amp;gt; * @author jdk * @date 2014-11-3 * @Version: 1.0 */ public abstract class MessageEventDispatchActivity extends Activity{ @Override protected void onCreate(Bundle savedInstanceState) { super.onCreate(savedInstanceState); // 类似BroadcastReceiver，在开始时要注册一次 EventBus.getDefault().register(this); } @Override protected void onDestroy() { System.gc(); super.onDestroy(); // 同样的，结束的时候也要取消订阅 EventBus.getDefault().unregister(this); } /** * 需要使用的消息接收方法 * * @param message 这个类为我封装的消息类，最简单的可以替换成任意类(如 String) */ public abstract void onEvent(EventMessage message); } Fragment 注册使用方式： import de.greenrobot.event.EventBus; import android.os.Bundle; import android.support.v4.app.Fragment; /** * ClassName: MessageEventDispatchFragment.java &amp;lt;/br&amp;gt; * Function: 事件消息注册 Fragment &amp;lt;/br&amp;gt; * @author jdk * @date 2014-11-3 * @Version: 1.0 */ public abstract class MessageEventDispatchFragment extends Fragment { @Override public void onCreate(Bundle savedInstanceState) { super.onCreate(savedInstanceState); EventBus.getDefault().register(this); } @Override public void onDestroy() { super.onDestroy(); EventBus.getDefault().unregister(this); } /** * 需要使用的消息接收方法 * * @param message */ public abstract void onEvent(EventMessage message); } ###2.消息处理 步骤1注册完接收方式后，就要进行消息处理了，只要订阅了，消息发送都会发送给 onEvent() 方法，这个时候就要在这个方法中进行消息过滤或者处理了。 ###3.消息发送 前面2个步骤只是做好了收到消息的准备，消息还需要发送，最简单的消息发送如下 // message如步骤1中所示，是我定义好的，也可以用其他任意类型。 EventBus.getDefault().post(message); 这只是简单是使用。具体的还可以玩出各中花样，我现在的工程中，使用这个来做全局消息分发，首先做一个消息封装，通过这个消息可以携带各类型的信息、协议信息，然后通过 http(volley、async-http)请求、IM 的 socket 通信进行消的封装，从而可以减少代码耦合、提高复用性。等有时间，再把这个封装抽象出来，单独写一次。</summary></entry><entry><title type="html">Gradle 打包 Android APP</title><link href="http://localhost:4000/2015/01/31/gradle_android_app/" rel="alternate" type="text/html" title="Gradle 打包 Android APP" /><published>2015-02-01T07:27:10+08:00</published><updated>2015-02-01T07:27:10+08:00</updated><id>http://localhost:4000/2015/01/31/gradle_android_app</id><content type="html" xml:base="http://localhost:4000/2015/01/31/gradle_android_app/">&lt;h1 id=&quot;gradle-打包-android-app&quot;&gt;Gradle 打包 Android APP&lt;/h1&gt;
-&lt;hr /&gt;
-&lt;p&gt;1.配置Gradle、android sdk path的问题略过，比较简单，网上很多。   &lt;br /&gt;
-2.Gradle 具体的打包，之前的资料还很少，具体的问题自己也遇到不少，做下总结。
-Gradle 的版本跟随着 Android 一直在升级，现在的这个编译已经是修改过几次了，目前代码对应的版本为 ：2.1。    &lt;br /&gt;
-工程有2个代码文件：&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;build.gradle，编译的具体代码，签名信息、代码信息、混淆文件等&lt;/li&gt;
-  &lt;li&gt;settings.gradle，工程路径说明，本地有自己或者第三方的 lib 时候，需要在这里进行说明。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&quot;buildgradle-的代码&quot;&gt;build.gradle 的代码&lt;/h3&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;import com.android.build.gradle.AppPlugin
-import com.android.build.gradle.LibraryPlugin
-
-buildscript   
-{  
-    repositories {  
-        mavenCentral()  
-    }  
-    dependencies {  
-        classpath 'com.android.tools.build:gradle:0.14.+'  
-    }  
-}
-
-apply plugin: 'android'
-
-android {
-    compileSdkVersion 19
-    buildToolsVersion &quot;20.0.0&quot;
-
-    defaultConfig {
-        applicationId &quot;com.xx.xx&quot;
-        minSdkVersion 8
-        targetSdkVersion 20
-    }
-
-    //签名 
-    signingConfigs {
-        release {
-            storeFile file('xxx.keystore')
-            storePassword 'xxxx'
-            keyAlias 'xxx.keystore'
-            keyPassword 'xx'
-        }
-    }
-
-    // 代码目录说明，如果是用 Android studio 开发，则不用加入这个，如果还是 Eclipse的版本则还是加入这个
-    sourceSets {  
-        main {  
-            manifest.srcFile 'AndroidManifest.xml'  
-            java.srcDirs = ['src']  
-            resources.srcDirs = ['src']  
-            aidl.srcDirs = ['src']  
-            renderscript.srcDirs = ['src']  
-            res.srcDirs = ['res']  
-            assets.srcDirs = ['assets']             
-       }  
-     }
-       
-    packagingOptions {
-        exclude 'META-INF/DEPENDENCIES'
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE.txt'
-        exclude 'META-INF/ASL2.0'
-    }
-
-    lintOptions {
-        abortOnError false
-        ignoreWarnings true
-    }
-
-    //多渠道，友盟添加多渠道版本需要 
-    productFlavors {
-        _360market {}
-//        _91market {}
-    }
-
-	// 不会一次性编译通过，如果编译或者运行有问题，注意查看错误代码，有可能是混淆代码有问题
-    buildTypes {
-        release {
-            signingConfig signingConfigs.release
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
-        }
-    }
-}
-
-// 第三方的lib导入
-dependencies {
- 	compile fileTree(dir: 'libs', include: '*.jar')
-    compile project(':volley-libray')
-    compile files('libs/eventbus.jar')
-    compile files('libs/gson-2.3.jar')
-    compile files('libs/greendao-1.3.7.jar')
-    compile files('libs/nineoldandroids-library-2.4.0.jar')
-    compile files('libs/umeng-analytics-v5.2.4.jar')
-    compile files('libs/universal-image-loader-1.9.3.jar')
-}
-
-// 友盟多渠道的替代，如果不使用，可以删除这部分代码，这个之前是参考别人的代码，但是参考的版本的 Gradle 已经不适用
-android.applicationVariants.all{ variant -&amp;gt;
-	variant.outputs.each { output -&amp;gt;
-	    output.processManifest.doLast{
-	    		def manifestFile = output.processManifest.manifestOutputFile	
-	    		def updatedContent = manifestFile.getText('UTF-8').replaceAll(&quot;UMENG_CHANNEL_VALUE&quot;, &quot;${variant.productFlavors[0].name}&quot;)
-    			manifestFile.write(updatedContent, 'UTF-8')
-	    }
-	}
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;settingsgradle-代码&quot;&gt;settings.gradle 代码&lt;/h3&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;include ':volley-libray'
-
-project(':volley-libray').projectDir = new File('/Users/**/**/volley-libray')
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;遇到的部分问题&quot;&gt;遇到的部分问题&lt;/h3&gt;
-&lt;h5 id=&quot;1configuration-with-name-default-not-found&quot;&gt;1.Configuration with name ‘default’ not found.&lt;/h5&gt;
-
-&lt;p&gt;一般是子模块中出问题，要确定子模块都有 build.gradle 文件，并且都能编译通过。  &lt;br /&gt;
-出处：http://stackoverflow.com/questions/18178267/configuration-with-name-default-not-found-while-building-android-project-on-gr&lt;/p&gt;
-
-&lt;h5 id=&quot;2getting-error-gradle-version-110-is-required-current-version-is-112-when-executing-gradle-wrapper&quot;&gt;2.Getting error “Gradle version 1.10 is required. Current version is 1.12.” when executing “gradle wrapper”?&lt;/h5&gt;
-&lt;p&gt;gradle 的版本问题，修改为高版本&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;buildscript { repositories { mavenCentral() } dependencies { classpath 'com.android.tools.build:gradle:0.14.+' } }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;出处：http://stackoverflow.com/questions/23464780/getting-error-gradle-version-1-10-is-required-current-version-is-1-12-when-e&lt;/p&gt;</content><author><name>tarda</name></author><category term="Android,gradle" /><summary type="html">Gradle 打包 Android APP 1.配置Gradle、android sdk path的问题略过，比较简单，网上很多。 2.Gradle 具体的打包，之前的资料还很少，具体的问题自己也遇到不少，做下总结。 Gradle 的版本跟随着 Android 一直在升级，现在的这个编译已经是修改过几次了，目前代码对应的版本为 ：2.1。 工程有2个代码文件： build.gradle，编译的具体代码，签名信息、代码信息、混淆文件等 settings.gradle，工程路径说明，本地有自己或者第三方的 lib 时候，需要在这里进行说明。</summary></entry></feed>
