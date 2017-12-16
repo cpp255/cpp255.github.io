@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>tarda</title>
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/primer-css/css/primer.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/primer-markdown/dist/user-content.min.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/octicons/octicons/octicons.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/collection.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/repo-card.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/sections/repo-list.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/sections/mini-repo-list.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/boxed-group.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/common.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/share.js/dist/css/share.min.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/responsive.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/posts/index.css">
+    <!-- Latest compiled and minified CSS -->
+    
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/pages/index.css">
+    
+
+    
+    <link rel="canonical" href="http://localhost:4000/">
+    <link rel="alternate" type="application/atom+xml" title="tarda" href="http://localhost:4000/feed.xml">
+    <link rel="shortcut icon" href="http://localhost:4000/favicon.ico">
+    
+    <meta name="keywords" content="tarda">
+    <meta name="description" content="的个人博客"">
+    
+    
+        
+    
+    <meta property="og:url" content="http://localhost:4000/">
+    <meta property="og:site_name" content="tarda">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="zh_CN" />
+    
+    <script src="http://localhost:4000/assets/vendor/jquery/dist/jquery.min.js"></script>
+    <script src="http://localhost:4000/assets/js/jquery-ui.js"></script>
+    <script type="text/javascript">
+    function toggleMenu() {
+        var nav = document.getElementsByClassName("site-header-nav")[0];
+        if (nav.style.display == "inline-flex") {
+          nav.style.display = "none";
+        } else {
+          nav.style.display = "inline-flex";
+        }
+    }
+    </script>
+</head>
+<body class="home" data-mz="home">
+    <header class="site-header">
+        <div class="container">
+            <h1><a href="http://localhost:4000/" title="tarda"><span class="octicon octicon-mark-github"></span> tarda</a></h1>
+            <button class="collapsed mobile-visible" type="button" onclick="toggleMenu();">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <nav class="site-header-nav" role="navigation">
+                
+                <a href="http://localhost:4000/" class=" site-header-nav-item" target="" title="首页">首页</a>
+                
+                <a href="http://localhost:4000/categories/" class=" site-header-nav-item" target="" title="分类">分类</a>
+                
+                <a href="http://localhost:4000/links/" class=" site-header-nav-item" target="" title="链接">链接</a>
+                
+                <a href="http://localhost:4000/about/" class=" site-header-nav-item" target="" title="关于">关于</a>
+                
+            </nav>
+        </div>
+    </header>
+    <!-- / header -->
+
+    <section class="banner">
+    <div class="collection-head">
+        <div class="container">
+            <div class="collection-title">
+              <h1 class="collection-header" id="sub-title"><span></span></h1>
+                <div class="collection-info">
+                    <span class="meta-info mobile-hidden">
+                        <span class="octicon octicon-location"></span>
+                        HangZhou, China
+                    </span>
+                    <span class="meta-info">
+                        <span class="octicon octicon-organization"></span>
+                        <a href="" target="_blank"></a>
+                    </span>
+                     <span class="meta-info">
+                        <span class="octicon octicon-mark-github"></span>
+                        <a href="https://github.com/tarda" target="_blank">tarda</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /.banner -->
+<section class="container content">
+    <div class="columns">
+        <div class="column two-thirds" >
+            <ol class="repo-list">
+                
+                <li class="repo-list-item">
+                    <h3 class="repo-list-name">
+                      <a href="http://localhost:4000/2017/12/15/Jedis-Keyevent/">Jedis 订阅事件阻塞</a>
+                    </h3>
+                    <p class="repo-list-description">
+                        Jedis 订阅事件阻塞
+Jedis 开启订阅事件的时候是这样的：
+
+public void psubscribe(final JedisPubSub jedisPubSub,     final String... patterns) { checkIsInMulti(); connect(); // 连接server，底层是通过socket进行连接 client.setTimeoutInfinite(); jedisPubSub.proceedWithPatterns(client, patterns);  // 主要是这里 client.rollbackTimeout();    }
+                    </p>
+                    <p class="repo-list-meta">
+                        <span class="meta-info">
+                          <span class="octicon octicon-calendar"></span> 2017/12/15
+                        </span>
+                        
+                        <span class="meta-info">
+                          <span class="octicon octicon-file-directory"></span>
+                          <a href="http://localhost:4000/categories/#技术分享" title="技术分享">技术分享</a>
+                        </span>
+                        
+                    </p>
+                </li>
+                
+                <li class="repo-list-item">
+                    <h3 class="repo-list-name">
+                      <a href="http://localhost:4000/2017/12/14/Redis-Keyevent/">Redis 事件监听</a>
+                    </h3>
+                    <p class="repo-list-description">
+                        Redis 事件监听
+                    </p>
+                    <p class="repo-list-meta">
+                        <span class="meta-info">
+                          <span class="octicon octicon-calendar"></span> 2017/12/14
+                        </span>
+                        
+                        <span class="meta-info">
+                          <span class="octicon octicon-file-directory"></span>
+                          <a href="http://localhost:4000/categories/#技术分享" title="技术分享">技术分享</a>
+                        </span>
+                        
+                    </p>
+                </li>
+                
+                <li class="repo-list-item">
+                    <h3 class="repo-list-name">
+                      <a href="http://localhost:4000/2017/05/21/sql_low_to_dubbo/">sql 引发的 dubbo 超时</a>
+                    </h3>
+                    <p class="repo-list-description">
+                        sql 引发的 dubbo 超时
+
+最近在对已有项目进行分离，用了 dubbo，分离之后发现有个接口请求超时了，Google 后找到：http://www.cnblogs.com/binyue/p/5380322.html，文章说有两个解决办法：
+
+  找出耗时最多的方法，调优。
+  加大超时时间。
+                    </p>
+                    <p class="repo-list-meta">
+                        <span class="meta-info">
+                          <span class="octicon octicon-calendar"></span> 2017/05/21
+                        </span>
+                        
+                        <span class="meta-info">
+                          <span class="octicon octicon-file-directory"></span>
+                          <a href="http://localhost:4000/categories/#技术分享" title="技术分享">技术分享</a>
+                        </span>
+                        
+                    </p>
+                </li>
+                
+                <li class="repo-list-item">
+                    <h3 class="repo-list-name">
+                      <a href="http://localhost:4000/2015/03/22/android_activity/">Android Activity 源码解析</a>
+                    </h3>
+                    <p class="repo-list-description">
+                        Android Activity 源码解析
+
+Activity 是用得最多的了，平时也只是熟练的使用，知道 launchMode、intent-filte、screenOrientation，然后看下官网的资料，7个步骤，如何切换这些。现在就读一下底层的源码吧。
+                    </p>
+                    <p class="repo-list-meta">
+                        <span class="meta-info">
+                          <span class="octicon octicon-calendar"></span> 2015/03/22
+                        </span>
+                        
+                        <span class="meta-info">
+                          <span class="octicon octicon-file-directory"></span>
+                          <a href="http://localhost:4000/categories/#技术分享" title="技术分享">技术分享</a>
+                        </span>
+                        
+                    </p>
+                </li>
+                
+                <li class="repo-list-item">
+                    <h3 class="repo-list-name">
+                      <a href="http://localhost:4000/2015/03/13/android-universal-image-loader(disk_cache_modify)/">Android-Universal-Image-Loader disk 缓存图片更改</a>
+                    </h3>
+                    <p class="repo-list-description">
+                        Android-Universal-Image-Loader缓存图片更改
+
+之前在论坛上看到过介绍 bither-android-lib 这个工程，主要是说 Android 现有的图片缓存机制比较老，效果不好，然后替换成这个工程，作者说有测试过，效果会比较好。我也拿来做测试了，没看出来。想着可以把平时用的图片的加载库替换掉 Android-Universal-Image-Loader。
+                    </p>
+                    <p class="repo-list-meta">
+                        <span class="meta-info">
+                          <span class="octicon octicon-calendar"></span> 2015/03/13
+                        </span>
+                        
+                        <span class="meta-info">
+                          <span class="octicon octicon-file-directory"></span>
+                          <a href="http://localhost:4000/categories/#技术分享" title="技术分享">技术分享</a>
+                        </span>
+                        
+                    </p>
+                </li>
+                
+                <li class="repo-list-item">
+                    <h3 class="repo-list-name">
+                      <a href="http://localhost:4000/2015/03/09/eventbus_use/">Eventbus 使用</a>
+                    </h3>
+                    <p class="repo-list-description">
+                        Eventbus
+
+Android 开发中，平时用多了 BroadcastReceiver 或者 Intent 进行事件分发，可以试试 Eventbus,进行封装再使用，简洁、快速，效果拔群。
+
+Eventbus 的使用比较简单，只需要一个事件接收方，一个事件发送方。就是简单的订阅者模式，只要有消息发送，订阅了该消息的对象就可以收到。Eventbus 支持 Activity、Fragment 做为订阅者，只要如下简单的注册即可接收消息，下面的代码我做了一下封装，只要继承这两个类，默认都可以接收到消息：
+
+1.消息注册
+
+Activity 注册使用方式：
+
+import android.os.Bundle;
+
+
+import de.greenrobot.event.EventBus;
+
+
+/**
+ * ClassName: MessageEventDispatchActivity.java &lt;/br&gt;
+ * Function: 事件消息注册 Activity &lt;/br&gt;
+ * @author jdk
+ * @date 2014-11-3
+ * @Version: 1.0
+ */
+ 
+public abstract class MessageEventDispatchActivity extends Activity{
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		// 类似BroadcastReceiver，在开始时要注册一次
+		EventBus.getDefault().register(this);
+	}
+
+	@Override
+	protected void onDestroy() {
+		System.gc();
+		super.onDestroy();
+		// 同样的，结束的时候也要取消订阅
+		EventBus.getDefault().unregister(this);
+	}
+
+	/**
+	 * 需要使用的消息接收方法
+	 * 
+	 * @param message 这个类为我封装的消息类，最简单的可以替换成任意类(如 String)
+	 */
+	public abstract void onEvent(EventMessage message);
+}
+
+
+
+Fragment 注册使用方式：
+
+import de.greenrobot.event.EventBus;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+
+/**
+ * ClassName: MessageEventDispatchFragment.java &lt;/br&gt;
+ * Function: 事件消息注册 Fragment &lt;/br&gt;
+ * @author jdk
+ * @date 2014-11-3
+ * @Version: 1.0
+ */
+public abstract class MessageEventDispatchFragment extends Fragment {
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		EventBus.getDefault().register(this);
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		EventBus.getDefault().unregister(this);
+	}
+
+	/**
+	 * 需要使用的消息接收方法
+	 * 
+	 * @param message
+	 */
+	public abstract void onEvent(EventMessage message);
+}
+
+
+
+###2.消息处理
+
+步骤1注册完接收方式后，就要进行消息处理了，只要订阅了，消息发送都会发送给 onEvent() 方法，这个时候就要在这个方法中进行消息过滤或者处理了。
+
+###3.消息发送
+前面2个步骤只是做好了收到消息的准备，消息还需要发送，最简单的消息发送如下
+
+// message如步骤1中所示，是我定义好的，也可以用其他任意类型。
+EventBus.getDefault().post(message);
+
+
+这只是简单是使用。具体的还可以玩出各中花样，我现在的工程中，使用这个来做全局消息分发，首先做一个消息封装，通过这个消息可以携带各类型的信息、协议信息，然后通过 http(volley、async-http)请求、IM 的 socket 通信进行消的封装，从而可以减少代码耦合、提高复用性。等有时间，再把这个封装抽象出来，单独写一次。
+                    </p>
+                    <p class="repo-list-meta">
+                        <span class="meta-info">
+                          <span class="octicon octicon-calendar"></span> 2015/03/09
+                        </span>
+                        
+                        <span class="meta-info">
+                          <span class="octicon octicon-file-directory"></span>
+                          <a href="http://localhost:4000/categories/#技术分享" title="技术分享">技术分享</a>
+                        </span>
+                        
+                    </p>
+                </li>
+                
+                <li class="repo-list-item">
+                    <h3 class="repo-list-name">
+                      <a href="http://localhost:4000/2015/01/31/gradle_android_app/">Gradle 打包 Android APP</a>
+                    </h3>
+                    <p class="repo-list-description">
+                        Gradle 打包 Android APP
+
+1.配置Gradle、android sdk path的问题略过，比较简单，网上很多。   
+2.Gradle 具体的打包，之前的资料还很少，具体的问题自己也遇到不少，做下总结。
+Gradle 的版本跟随着 Android 一直在升级，现在的这个编译已经是修改过几次了，目前代码对应的版本为 ：2.1。    
+工程有2个代码文件：
+
+  build.gradle，编译的具体代码，签名信息、代码信息、混淆文件等
+  settings.gradle，工程路径说明，本地有自己或者第三方的 lib 时候，需要在这里进行说明。
+                    </p>
+                    <p class="repo-list-meta">
+                        <span class="meta-info">
+                          <span class="octicon octicon-calendar"></span> 2015/01/31
+                        </span>
+                        
+                        <span class="meta-info">
+                          <span class="octicon octicon-file-directory"></span>
+                          <a href="http://localhost:4000/categories/#技术分享" title="技术分享">技术分享</a>
+                        </span>
+                        
+                    </p>
+                </li>
+                
+            </ol>
+        </div>
+        <div class="column one-third">
+            
+<h3>Search</h3>
+<div id="site_search">
+    <input type="text" id="search_box" placeholder="Search">
+</div>
+
+<ul id="search_results"></ul>
+
+<link rel="stylesheet" type="text/css" href="http://localhost:4000/assets/css/modules/sidebar-search.css">
+<script src="http://localhost:4000/assets/js/jekyll-search.min.js"></script>
+<script src="http://localhost:4000/assets/js/search.js"></script>
+
+<script type="text/javascript">
+SimpleJekyllSearch({
+    searchInput: document.getElementById('search_box'),
+    resultsContainer: document.getElementById('search_results'),
+    json: 'http://localhost:4000/assets/search_data.json',
+    searchResultTemplate: '<li><a href="{url}" title="{desc}">{title}</a></li>',
+    noResultsText: 'No results found',
+    limit: 10,
+    fuzzy: false,
+    exclude: ['Welcome']
+})
+</script>
+
+            <h3>My Popular Repositories</h3>
+
+
+
+<a href="https://github.com/cpp255/BookBarCode" target="_blank" class="card text-center">
+    <div class="thumbnail">
+        <div class="card-image geopattern" data-pattern-id="BookBarCode">
+            <div class="card-image-cell">
+                <h3 class="card-title">
+                    BookBarCode
+                </h3>
+            </div>
+        </div>
+        <div class="caption">
+            <div class="card-description">
+                <p class="card-text">Use Zxing scan action code,  add download and save book info to storage.</p>
+            </div>
+            <div class="card-text">
+                <span class="meta-info" title="4 stars">
+                    <span class="octicon octicon-star"></span> 4
+                </span>
+                <span class="meta-info" title="2 forks">
+                    <span class="octicon octicon-git-branch"></span> 2
+                </span>
+                <span class="meta-info" title="Last updated：2015-03-30 11:51:18 UTC">
+                    <span class="octicon octicon-clock"></span>
+                    <time datetime="2015-03-30 11:51:18 UTC">2015-03-30</time>
+                </span>
+            </div>
+        </div>
+    </div>
+</a>
+
+<a href="https://github.com/cpp255/Android-CPP255-Views" target="_blank" class="card text-center">
+    <div class="thumbnail">
+        <div class="card-image geopattern" data-pattern-id="Android-CPP255-Views">
+            <div class="card-image-cell">
+                <h3 class="card-title">
+                    Android-CPP255-Views
+                </h3>
+            </div>
+        </div>
+        <div class="caption">
+            <div class="card-description">
+                <p class="card-text"></p>
+            </div>
+            <div class="card-text">
+                <span class="meta-info" title="2 stars">
+                    <span class="octicon octicon-star"></span> 2
+                </span>
+                <span class="meta-info" title="0 forks">
+                    <span class="octicon octicon-git-branch"></span> 0
+                </span>
+                <span class="meta-info" title="Last updated：2015-06-08 03:33:32 UTC">
+                    <span class="octicon octicon-clock"></span>
+                    <time datetime="2015-06-08 03:33:32 UTC">2015-06-08</time>
+                </span>
+            </div>
+        </div>
+    </div>
+</a>
+
+<a href="https://github.com/cpp255/MultiChannelPackageTool" target="_blank" class="card text-center">
+    <div class="thumbnail">
+        <div class="card-image geopattern" data-pattern-id="MultiChannelPackageTool">
+            <div class="card-image-cell">
+                <h3 class="card-title">
+                    MultiChannelPackageTool
+                </h3>
+            </div>
+        </div>
+        <div class="caption">
+            <div class="card-description">
+                <p class="card-text">Android Multi channel package tool （安卓多渠道打包工具）</p>
+            </div>
+            <div class="card-text">
+                <span class="meta-info" title="0 stars">
+                    <span class="octicon octicon-star"></span> 0
+                </span>
+                <span class="meta-info" title="0 forks">
+                    <span class="octicon octicon-git-branch"></span> 0
+                </span>
+                <span class="meta-info" title="Last updated：2016-10-27 03:14:39 UTC">
+                    <span class="octicon octicon-clock"></span>
+                    <time datetime="2016-10-27 03:14:39 UTC">2016-10-27</time>
+                </span>
+            </div>
+        </div>
+    </div>
+</a>
+
+<a href="https://github.com/cpp255/canku" target="_blank" class="card text-center">
+    <div class="thumbnail">
+        <div class="card-image geopattern" data-pattern-id="canku">
+            <div class="card-image-cell">
+                <h3 class="card-title">
+                    canku
+                </h3>
+            </div>
+        </div>
+        <div class="caption">
+            <div class="card-description">
+                <p class="card-text">使用 Nodejs (Express) 编写的团体订餐程序</p>
+            </div>
+            <div class="card-text">
+                <span class="meta-info" title="0 stars">
+                    <span class="octicon octicon-star"></span> 0
+                </span>
+                <span class="meta-info" title="0 forks">
+                    <span class="octicon octicon-git-branch"></span> 0
+                </span>
+                <span class="meta-info" title="Last updated：2014-04-26 15:32:08 UTC">
+                    <span class="octicon octicon-clock"></span>
+                    <time datetime="2014-04-26 15:32:08 UTC">2014-04-26</time>
+                </span>
+            </div>
+        </div>
+    </div>
+</a>
+
+<a href="https://github.com/cpp255/shadowsocks-android" target="_blank" class="card text-center">
+    <div class="thumbnail">
+        <div class="card-image geopattern" data-pattern-id="shadowsocks-android">
+            <div class="card-image-cell">
+                <h3 class="card-title">
+                    shadowsocks-android
+                </h3>
+            </div>
+        </div>
+        <div class="caption">
+            <div class="card-description">
+                <p class="card-text">A Shadowsocks client for Android</p>
+            </div>
+            <div class="card-text">
+                <span class="meta-info" title="0 stars">
+                    <span class="octicon octicon-star"></span> 0
+                </span>
+                <span class="meta-info" title="0 forks">
+                    <span class="octicon octicon-git-branch"></span> 0
+                </span>
+                <span class="meta-info" title="Last updated：2016-01-09 03:13:44 UTC">
+                    <span class="octicon octicon-clock"></span>
+                    <time datetime="2016-01-09 03:13:44 UTC">2016-01-09</time>
+                </span>
+            </div>
+        </div>
+    </div>
+</a>
+
+
+
+        </div>
+    </div>
+    <div class="pagination text-align">
+      <div class="btn-group">
+        
+            <button disabled="disabled" href="javascript:;" class="btn btn-outline">&laquo;</button>
+        
+        
+            <a href="javascript:;" class="active btn btn-outline">1</a>
+        
+        
+        
+            <button disabled="disabled" href="javascript:;" class="btn btn-outline">&raquo;</button>
+        
+        </div>
+    </div>
+    <!-- /pagination -->
+</section>
+<!-- /section.content -->
+
+    <footer class="container">
+        <div class="site-footer" role="contentinfo">
+            <div class="copyright left mobile-block">
+                    © 2015
+                    <span title="tarda">tarda</span>
+                    <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a>
+            </div>
+
+            <ul class="site-footer-links right mobile-hidden">
+                <li>
+                    <a href="javascript:window.scrollTo(0,0)" >TOP</a>
+                </li>
+            </ul>
+            <a href="http://github.com/cpp255/tarda.github.io" target="_blank" aria-label="view source code">
+                <span class="mega-octicon octicon-mark-github" title="GitHub"></span>
+            </a>
+            <ul class="site-footer-links mobile-hidden">
+                
+                <li>
+                    <a href="http://localhost:4000/" title="首页" target="">首页</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/categories/" title="分类" target="">分类</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/links/" title="链接" target="">链接</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/about/" title="关于" target="">关于</a>
+                </li>
+                
+                <li><a href="http://localhost:4000/feed.xml"><span class="octicon octicon-rss" style="color:orange;"></span></a></li>
+            </ul>
+
+        </div>
+    </footer>
+    <!-- / footer -->
+    <script src="http://localhost:4000/assets/vendor/share.js/dist/js/share.min.js"></script>
+    <script src="http://localhost:4000/assets/js/geopattern.js"></script>
+    <script src="http://localhost:4000/assets/js/prism.js"></script>
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/prism.css">
+    <script>
+      jQuery(document).ready(function($) {
+        // geopattern
+        $('.geopattern').each(function(){
+          $(this).geopattern($(this).data('pattern-id'));
+        });
+       // hljs.initHighlightingOnLoad();
+      });
+    </script>
+
+    
+
+    
+
+    
+
+    
+</body>
+</html>

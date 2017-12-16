@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>Eventbus 使用 &mdash; tarda</title>
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/primer-css/css/primer.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/primer-markdown/dist/user-content.min.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/octicons/octicons/octicons.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/collection.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/repo-card.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/sections/repo-list.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/sections/mini-repo-list.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/boxed-group.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/common.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/share.js/dist/css/share.min.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/responsive.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/posts/index.css">
+    <!-- Latest compiled and minified CSS -->
+    
+
+    
+    <link rel="canonical" href="http://localhost:4000/2015/03/09/eventbus_use/">
+    <link rel="alternate" type="application/atom+xml" title="tarda" href="http://localhost:4000/feed.xml">
+    <link rel="shortcut icon" href="http://localhost:4000/favicon.ico">
+    
+    <meta property="og:title" content="Eventbus 使用">
+      
+    <meta name="keywords" content="tarda">
+    <meta name="og:keywords" content="tarda">
+      
+    <meta name="description" content="EventbusAndroid 开发中，平时用多了 BroadcastReceiver 或者 Intent 进行事件分发，可以试试 Eventbus,进行封装再使用，简洁、快速，效果拔群。Eventbus 的使用比较简单，只需要一个事件接收方，一个事件发送方。就是简单的订阅者模式，只要有消息发送，订阅了该消息的对象就可以收到。Eventbus 支持 Activity、Fragment 做为订阅者，只要如下简单的注册即可接收消息，下面的代码我做了一下封装，只要继承这两个类，默认都可以接收到消息：1.消息注册Activity 注册使用方式：import android.os.Bundle;import de.greenrobot.event.EventBus;/** * ClassName: MessageEventDispatchActivity.java &lt;/br&gt; * Function: 事件消息注册 Activity &lt;/br&gt; * @author jdk * @date 2014-11-3 * @Version: 1.0 */ public abstract class MessageEventDispatchActivity extends Activity{	@Override	protected void onCreate(Bundle savedInstanceState) {		super.onCreate(savedInstanceState);		// 类似BroadcastReceiver，在开始时要注册一次		EventBus.getDefault().register(this);	}	@Override	protected void onDestroy() {		System.gc();		super.onDestroy();		// 同样的，结束的时候也要取消订阅		EventBus.getDefault().unregister(this);	}	/**	 * 需要使用的消息接收方法	 * 	 * @param message 这个类为我封装的消息类，最简单的可以替换成任意类(如 String)	 */	public abstract void onEvent(EventMessage message);}Fragment 注册使用方式：import de.greenrobot.event.EventBus;import android.os.Bundle;import android.support.v4.app.Fragment;/** * ClassName: MessageEventDispatchFragment.java &lt;/br&gt; * Function: 事件消息注册 Fragment &lt;/br&gt; * @author jdk * @date 2014-11-3 * @Version: 1.0 */public abstract class MessageEventDispatchFragment extends Fragment {	@Override	public void onCreate(Bundle savedInstanceState) {		super.onCreate(savedInstanceState);		EventBus.getDefault().register(this);	}	@Override	public void onDestroy() {		super.onDestroy();		EventBus.getDefault().unregister(this);	}	/**	 * 需要使用的消息接收方法	 * 	 * @param message	 */	public abstract void onEvent(EventMessage message);}###2.消息处理步骤1注册完接收方式后，就要进行消息处理了，只要订阅了，消息发送都会发送给 onEvent() 方法，这个时候就要在这个方法中进行消息过滤或者处理了。###3.消息发送前面2个步骤只是做好了收到消息的准备，消息还需要发送，最简单的消息发送如下// message如步骤1中所示，是我定义好的，也可以用其他任意类型。EventBus.getDefault().post(message);这只是简单是使用。具体的还可以玩出各中花样，我现在的工程中，使用这个来做全局消息分发，首先做一个消息封装，通过这个消息可以携带各类型的信息、协议信息，然后通过 http(volley、async-http)请求、IM 的 socket 通信进行消的封装，从而可以减少代码耦合、提高复用性。等有时间，再把这个封装抽象出来，单独写一次。">
+    <meta name="og:description" content="EventbusAndroid 开发中，平时用多了 BroadcastReceiver 或者 Intent 进行事件分发，可以试试 Eventbus,进行封装再使用，简洁、快速，效果拔群。Eventbus 的使用比较简单，只需要一个事件接收方，一个事件发送方。就是简单的订阅者模式，只要有消息发送，订阅了该消息的对象就可以收到。Eventbus 支持 Activity、Fragment 做为订阅者，只要如下简单的注册即可接收消息，下面的代码我做了一下封装，只要继承这两个类，默认都可以接收到消息：1.消息注册Activity 注册使用方式：import android.os.Bundle;import de.greenrobot.event.EventBus;/** * ClassName: MessageEventDispatchActivity.java &lt;/br&gt; * Function: 事件消息注册 Activity &lt;/br&gt; * @author jdk * @date 2014-11-3 * @Version: 1.0 */ public abstract class MessageEventDispatchActivity extends Activity{	@Override	protected void onCreate(Bundle savedInstanceState) {		super.onCreate(savedInstanceState);		// 类似BroadcastReceiver，在开始时要注册一次		EventBus.getDefault().register(this);	}	@Override	protected void onDestroy() {		System.gc();		super.onDestroy();		// 同样的，结束的时候也要取消订阅		EventBus.getDefault().unregister(this);	}	/**	 * 需要使用的消息接收方法	 * 	 * @param message 这个类为我封装的消息类，最简单的可以替换成任意类(如 String)	 */	public abstract void onEvent(EventMessage message);}Fragment 注册使用方式：import de.greenrobot.event.EventBus;import android.os.Bundle;import android.support.v4.app.Fragment;/** * ClassName: MessageEventDispatchFragment.java &lt;/br&gt; * Function: 事件消息注册 Fragment &lt;/br&gt; * @author jdk * @date 2014-11-3 * @Version: 1.0 */public abstract class MessageEventDispatchFragment extends Fragment {	@Override	public void onCreate(Bundle savedInstanceState) {		super.onCreate(savedInstanceState);		EventBus.getDefault().register(this);	}	@Override	public void onDestroy() {		super.onDestroy();		EventBus.getDefault().unregister(this);	}	/**	 * 需要使用的消息接收方法	 * 	 * @param message	 */	public abstract void onEvent(EventMessage message);}###2.消息处理步骤1注册完接收方式后，就要进行消息处理了，只要订阅了，消息发送都会发送给 onEvent() 方法，这个时候就要在这个方法中进行消息过滤或者处理了。###3.消息发送前面2个步骤只是做好了收到消息的准备，消息还需要发送，最简单的消息发送如下// message如步骤1中所示，是我定义好的，也可以用其他任意类型。EventBus.getDefault().post(message);这只是简单是使用。具体的还可以玩出各中花样，我现在的工程中，使用这个来做全局消息分发，首先做一个消息封装，通过这个消息可以携带各类型的信息、协议信息，然后通过 http(volley、async-http)请求、IM 的 socket 通信进行消的封装，从而可以减少代码耦合、提高复用性。等有时间，再把这个封装抽象出来，单独写一次。">
+      
+    
+    
+        
+    
+    <meta property="og:url" content="http://localhost:4000/2015/03/09/eventbus_use/">
+    <meta property="og:site_name" content="tarda">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="zh_CN" />
+    
+    <meta property="article:published_time" content="2015-03-09">
+    
+    <script src="http://localhost:4000/assets/vendor/jquery/dist/jquery.min.js"></script>
+    <script src="http://localhost:4000/assets/js/jquery-ui.js"></script>
+    <script type="text/javascript">
+    function toggleMenu() {
+        var nav = document.getElementsByClassName("site-header-nav")[0];
+        if (nav.style.display == "inline-flex") {
+          nav.style.display = "none";
+        } else {
+          nav.style.display = "inline-flex";
+        }
+    }
+    </script>
+</head>
+<body class="" data-mz="">
+    <header class="site-header">
+        <div class="container">
+            <h1><a href="http://localhost:4000/" title="tarda"><span class="octicon octicon-mark-github"></span> tarda</a></h1>
+            <button class="collapsed mobile-visible" type="button" onclick="toggleMenu();">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <nav class="site-header-nav" role="navigation">
+                
+                <a href="http://localhost:4000/" class=" site-header-nav-item" target="" title="首页">首页</a>
+                
+                <a href="http://localhost:4000/categories/" class=" site-header-nav-item" target="" title="分类">分类</a>
+                
+                <a href="http://localhost:4000/links/" class=" site-header-nav-item" target="" title="链接">链接</a>
+                
+                <a href="http://localhost:4000/about/" class=" site-header-nav-item" target="" title="关于">关于</a>
+                
+            </nav>
+        </div>
+    </header>
+    <!-- / header -->
+
+    <section class="collection-head small geopattern" data-pattern-id="Eventbus 使用">
+<div class="container">
+  <div class="columns">
+    <div class="column three-fourths">
+      <div class="collection-title">
+        <h1 class="collection-header">Eventbus 使用</h1>
+        <div class="collection-info">
+          
+          <span class="meta-info">
+            <span class="octicon octicon-calendar"></span> 2015/03/09
+          </span>
+          
+          
+          <span class="meta-info">
+            <span class="octicon octicon-file-directory"></span>
+            <a href="http://localhost:4000/categories/#技术分享" title="技术分享">技术分享</a>
+          </span>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+<!-- / .banner -->
+<section class="container content">
+<div class="columns">
+  <div class="column three-fourths" >
+    <article class="article-content markdown-body">
+    <h1 id="eventbus">Eventbus</h1>
+<hr />
+<p>Android 开发中，平时用多了 BroadcastReceiver 或者 Intent 进行事件分发，可以试试 <a href="https://github.com/greenrobot/EventBus">Eventbus</a>,进行封装再使用，简洁、快速，效果拔群。</p>
+
+<p>Eventbus 的使用比较简单，只需要一个事件接收方，一个事件发送方。就是简单的订阅者模式，只要有消息发送，订阅了该消息的对象就可以收到。Eventbus 支持 Activity、Fragment 做为订阅者，只要如下简单的注册即可接收消息，下面的代码我做了一下封装，只要继承这两个类，默认都可以接收到消息：</p>
+
+<h3 id="1消息注册">1.消息注册</h3>
+
+<h5 id="activity-注册使用方式">Activity 注册使用方式：</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import android.os.Bundle;
+
+
+import de.greenrobot.event.EventBus;
+
+
+/**
+ * ClassName: MessageEventDispatchActivity.java &lt;/br&gt;
+ * Function: 事件消息注册 Activity &lt;/br&gt;
+ * @author jdk
+ * @date 2014-11-3
+ * @Version: 1.0
+ */
+ 
+public abstract class MessageEventDispatchActivity extends Activity{
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		// 类似BroadcastReceiver，在开始时要注册一次
+		EventBus.getDefault().register(this);
+	}
+
+	@Override
+	protected void onDestroy() {
+		System.gc();
+		super.onDestroy();
+		// 同样的，结束的时候也要取消订阅
+		EventBus.getDefault().unregister(this);
+	}
+
+	/**
+	 * 需要使用的消息接收方法
+	 * 
+	 * @param message 这个类为我封装的消息类，最简单的可以替换成任意类(如 String)
+	 */
+	public abstract void onEvent(EventMessage message);
+}
+
+</code></pre></div></div>
+
+<h5 id="fragment-注册使用方式">Fragment 注册使用方式：</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import de.greenrobot.event.EventBus;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+
+/**
+ * ClassName: MessageEventDispatchFragment.java &lt;/br&gt;
+ * Function: 事件消息注册 Fragment &lt;/br&gt;
+ * @author jdk
+ * @date 2014-11-3
+ * @Version: 1.0
+ */
+public abstract class MessageEventDispatchFragment extends Fragment {
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		EventBus.getDefault().register(this);
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		EventBus.getDefault().unregister(this);
+	}
+
+	/**
+	 * 需要使用的消息接收方法
+	 * 
+	 * @param message
+	 */
+	public abstract void onEvent(EventMessage message);
+}
+
+</code></pre></div></div>
+
+<p>###2.消息处理</p>
+
+<p>步骤1注册完接收方式后，就要进行消息处理了，只要订阅了，消息发送都会发送给 onEvent() 方法，这个时候就要在这个方法中进行消息过滤或者处理了。</p>
+
+<p>###3.消息发送
+前面2个步骤只是做好了收到消息的准备，消息还需要发送，最简单的消息发送如下</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// message如步骤1中所示，是我定义好的，也可以用其他任意类型。
+EventBus.getDefault().post(message);
+</code></pre></div></div>
+
+<p>这只是简单是使用。具体的还可以玩出各中花样，我现在的工程中，使用这个来做全局消息分发，首先做一个消息封装，通过这个消息可以携带各类型的信息、协议信息，然后通过 http(volley、async-http)请求、IM 的 socket 通信进行消的封装，从而可以减少代码耦合、提高复用性。等有时间，再把这个封装抽象出来，单独写一次。</p>
+
+    </article>
+    <div class="share">
+      <div class="share-component"></div>
+    </div>
+    <div class="comment">
+      
+
+  
+
+  
+        <div id="gitalk-container"></div>
+        <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+        <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+        <script>
+        var gitalk = new Gitalk({
+            id: '/2015/03/09/eventbus_use/',
+            clientID: '73606014c7ae3b527252',
+            clientSecret: 'e9d9d7254aae4c5d6472af0d881b086acd7ab7b5',
+            repo: 'blog-comments',
+            owner: 'cpp255',
+            admin: ['cpp255'],
+            labels: ['gitment'],
+            perPage: 50,
+        })
+        gitalk.render('gitalk-container')
+        </script>
+  
+
+
+    </div>
+  </div>
+  <div class="column one-fourth">
+    
+<h3>Search</h3>
+<div id="site_search">
+    <input type="text" id="search_box" placeholder="Search">
+</div>
+
+<ul id="search_results"></ul>
+
+<link rel="stylesheet" type="text/css" href="http://localhost:4000/assets/css/modules/sidebar-search.css">
+<script src="http://localhost:4000/assets/js/jekyll-search.min.js"></script>
+<script src="http://localhost:4000/assets/js/search.js"></script>
+
+<script type="text/javascript">
+SimpleJekyllSearch({
+    searchInput: document.getElementById('search_box'),
+    resultsContainer: document.getElementById('search_results'),
+    json: 'http://localhost:4000/assets/search_data.json',
+    searchResultTemplate: '<li><a href="{url}" title="{desc}">{title}</a></li>',
+    noResultsText: 'No results found',
+    limit: 10,
+    fuzzy: false,
+    exclude: ['Welcome']
+})
+</script>
+
+    
+
+    
+<h3 class="post-directory-title mobile-hidden">Table of Contents</h3>
+<div id="post-directory-module" class="mobile-hidden">
+  <section class="post-directory">
+  <!-- Links that trigger the jumping -->
+  <!-- Added by javascript below -->
+  <dl></dl>
+  </section>
+</div>
+
+<script src="http://localhost:4000/assets/js/jquery.toc.js"></script>
+
+  </div>
+</div>
+</section>
+<!-- /section.content -->
+
+    <footer class="container">
+        <div class="site-footer" role="contentinfo">
+            <div class="copyright left mobile-block">
+                    © 2015
+                    <span title="tarda">tarda</span>
+                    <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a>
+            </div>
+
+            <ul class="site-footer-links right mobile-hidden">
+                <li>
+                    <a href="javascript:window.scrollTo(0,0)" >TOP</a>
+                </li>
+            </ul>
+            <a href="http://github.com/cpp255/tarda.github.io" target="_blank" aria-label="view source code">
+                <span class="mega-octicon octicon-mark-github" title="GitHub"></span>
+            </a>
+            <ul class="site-footer-links mobile-hidden">
+                
+                <li>
+                    <a href="http://localhost:4000/" title="首页" target="">首页</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/categories/" title="分类" target="">分类</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/links/" title="链接" target="">链接</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/about/" title="关于" target="">关于</a>
+                </li>
+                
+                <li><a href="http://localhost:4000/feed.xml"><span class="octicon octicon-rss" style="color:orange;"></span></a></li>
+            </ul>
+
+        </div>
+    </footer>
+    <!-- / footer -->
+    <script src="http://localhost:4000/assets/vendor/share.js/dist/js/share.min.js"></script>
+    <script src="http://localhost:4000/assets/js/geopattern.js"></script>
+    <script src="http://localhost:4000/assets/js/prism.js"></script>
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/prism.css">
+    <script>
+      jQuery(document).ready(function($) {
+        // geopattern
+        $('.geopattern').each(function(){
+          $(this).geopattern($(this).data('pattern-id'));
+        });
+       // hljs.initHighlightingOnLoad();
+      });
+    </script>
+
+    
+
+    
+
+    
+
+    
+</body>
+</html>

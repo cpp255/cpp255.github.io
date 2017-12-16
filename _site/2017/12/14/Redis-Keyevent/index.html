@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>Redis 事件监听 &mdash; tarda</title>
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/primer-css/css/primer.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/primer-markdown/dist/user-content.min.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/octicons/octicons/octicons.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/collection.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/repo-card.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/sections/repo-list.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/sections/mini-repo-list.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/boxed-group.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/common.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/share.js/dist/css/share.min.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/responsive.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/posts/index.css">
+    <!-- Latest compiled and minified CSS -->
+    
+
+    
+    <link rel="canonical" href="http://localhost:4000/2017/12/14/Redis-Keyevent/">
+    <link rel="alternate" type="application/atom+xml" title="tarda" href="http://localhost:4000/feed.xml">
+    <link rel="shortcut icon" href="http://localhost:4000/favicon.ico">
+    
+    <meta property="og:title" content="Redis 事件监听">
+      
+    <meta name="keywords" content="tarda">
+    <meta name="og:keywords" content="tarda">
+      
+    <meta name="description" content="Redis 事件监听">
+    <meta name="og:description" content="Redis 事件监听">
+      
+    
+    
+        
+    
+    <meta property="og:url" content="http://localhost:4000/2017/12/14/Redis-Keyevent/">
+    <meta property="og:site_name" content="tarda">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="zh_CN" />
+    
+    <meta property="article:published_time" content="2017-12-14">
+    
+    <script src="http://localhost:4000/assets/vendor/jquery/dist/jquery.min.js"></script>
+    <script src="http://localhost:4000/assets/js/jquery-ui.js"></script>
+    <script type="text/javascript">
+    function toggleMenu() {
+        var nav = document.getElementsByClassName("site-header-nav")[0];
+        if (nav.style.display == "inline-flex") {
+          nav.style.display = "none";
+        } else {
+          nav.style.display = "inline-flex";
+        }
+    }
+    </script>
+</head>
+<body class="" data-mz="">
+    <header class="site-header">
+        <div class="container">
+            <h1><a href="http://localhost:4000/" title="tarda"><span class="octicon octicon-mark-github"></span> tarda</a></h1>
+            <button class="collapsed mobile-visible" type="button" onclick="toggleMenu();">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <nav class="site-header-nav" role="navigation">
+                
+                <a href="http://localhost:4000/" class=" site-header-nav-item" target="" title="首页">首页</a>
+                
+                <a href="http://localhost:4000/categories/" class=" site-header-nav-item" target="" title="分类">分类</a>
+                
+                <a href="http://localhost:4000/links/" class=" site-header-nav-item" target="" title="链接">链接</a>
+                
+                <a href="http://localhost:4000/about/" class=" site-header-nav-item" target="" title="关于">关于</a>
+                
+            </nav>
+        </div>
+    </header>
+    <!-- / header -->
+
+    <section class="collection-head small geopattern" data-pattern-id="Redis 事件监听">
+<div class="container">
+  <div class="columns">
+    <div class="column three-fourths">
+      <div class="collection-title">
+        <h1 class="collection-header">Redis 事件监听</h1>
+        <div class="collection-info">
+          
+          <span class="meta-info">
+            <span class="octicon octicon-calendar"></span> 2017/12/14
+          </span>
+          
+          
+          <span class="meta-info">
+            <span class="octicon octicon-file-directory"></span>
+            <a href="http://localhost:4000/categories/#技术分享" title="技术分享">技术分享</a>
+          </span>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+<!-- / .banner -->
+<section class="container content">
+<div class="columns">
+  <div class="column three-fourths" >
+    <article class="article-content markdown-body">
+    <h1 id="redis-事件监听">Redis 事件监听</h1>
+<hr />
+
+<p>2.8 以后的版本开始支持事件监听，由于开启会消耗CPU资源，默认关闭。<br />
+开启事件支持有两种方式：服务端配置和客户端配置；服务端的配置是永久有效的，客户端的配置重启后会失效。服务端开启事件支持后，客户端就可以开始订阅服务端推送的事件监听。</p>
+
+<p><strong>事件类型</strong></p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>K     Keyspace events, published with __keyspace@&lt;db&gt;__ prefix.
+E     Keyevent events, published with __keyevent@&lt;db&gt;__ prefix.
+g     Generic commands (non-type specific) like DEL, EXPIRE, RENAME, ...
+$     String commands
+l     List commands
+s     Set commands
+h     Hash commands
+z     Sorted set commands
+x     Expired events (events generated every time a key expires)
+e     Evicted events (events generated when a key is evicted for maxmemory)
+A     Alias for g$lshzxe, so that the "AKE" string means all the events.
+</code></pre></div></div>
+
+<p>1.服务端在 redis.conf 中打开事件监听配置，再重启redis服务，这里使用的是接收所有类型，就是”A”，具体使用的话可以随意替换类型；注意启动的时候是否使用当前目录修改的 redis.conf</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>notify-keyspace-events "EA"
+</code></pre></div></div>
+
+<p>重启 redis：</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./src/redis-server redis.conf
+</code></pre></div></div>
+
+<ol>
+  <li>客户端</li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> redis-cli config set notify-keyspace-events KEA
+</code></pre></div></div>
+
+<p>如果只监听删除、过期和因为内存过大被删除的，则模式可以选择为： Egxe</p>
+
+<p><strong>客户端接收订阅事件</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>psubscribe '__keyevent*__:*'  // 订阅所有事件
+psubscribe __keyevent@0__:del  // 订阅数据库0的del事件
+psubscribe __keyevent@0__:expired  // 订阅数据库0的expired事件
+</code></pre></div></div>
+
+<p>jedis 接收订阅事件，继承 JedisPubSub 类，在实现的方法里面接收处理的逻辑:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 接收订阅事件</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onPMessage</span><span class="o">(</span><span class="n">String</span> <span class="n">pattern</span><span class="o">,</span> <span class="n">String</span> <span class="n">channel</span><span class="o">,</span> <span class="n">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>注册订阅事件，pattern 跟客户端订阅事件一样，可以添加不同的订阅事件，也可以添加多个事件，例如：<strong>keyevent@0</strong>:del；注册订阅事件是阻塞操作，建议单独生成另一个线程。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Jedis</span> <span class="n">jedis</span><span class="o">;</span>
+<span class="n">jedis</span><span class="o">.</span><span class="na">psubscribe</span><span class="o">(</span><span class="n">jedisPubSub</span><span class="o">,</span> <span class="n">pattern</span><span class="o">);</span>
+</code></pre></div></div>
+
+<p>参考：
+1 http://redisdoc.com/topic/notification.html <br />
+2 https://redis.io/topics/notifications</p>
+
+
+    </article>
+    <div class="share">
+      <div class="share-component"></div>
+    </div>
+    <div class="comment">
+      
+
+  
+
+  
+        <div id="gitalk-container"></div>
+        <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+        <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+        <script>
+        var gitalk = new Gitalk({
+            id: '/2017/12/14/Redis-Keyevent/',
+            clientID: '73606014c7ae3b527252',
+            clientSecret: 'e9d9d7254aae4c5d6472af0d881b086acd7ab7b5',
+            repo: 'blog-comments',
+            owner: 'cpp255',
+            admin: ['cpp255'],
+            labels: ['gitment'],
+            perPage: 50,
+        })
+        gitalk.render('gitalk-container')
+        </script>
+  
+
+
+    </div>
+  </div>
+  <div class="column one-fourth">
+    
+<h3>Search</h3>
+<div id="site_search">
+    <input type="text" id="search_box" placeholder="Search">
+</div>
+
+<ul id="search_results"></ul>
+
+<link rel="stylesheet" type="text/css" href="http://localhost:4000/assets/css/modules/sidebar-search.css">
+<script src="http://localhost:4000/assets/js/jekyll-search.min.js"></script>
+<script src="http://localhost:4000/assets/js/search.js"></script>
+
+<script type="text/javascript">
+SimpleJekyllSearch({
+    searchInput: document.getElementById('search_box'),
+    resultsContainer: document.getElementById('search_results'),
+    json: 'http://localhost:4000/assets/search_data.json',
+    searchResultTemplate: '<li><a href="{url}" title="{desc}">{title}</a></li>',
+    noResultsText: 'No results found',
+    limit: 10,
+    fuzzy: false,
+    exclude: ['Welcome']
+})
+</script>
+
+    
+
+    
+<h3 class="post-directory-title mobile-hidden">Table of Contents</h3>
+<div id="post-directory-module" class="mobile-hidden">
+  <section class="post-directory">
+  <!-- Links that trigger the jumping -->
+  <!-- Added by javascript below -->
+  <dl></dl>
+  </section>
+</div>
+
+<script src="http://localhost:4000/assets/js/jquery.toc.js"></script>
+
+  </div>
+</div>
+</section>
+<!-- /section.content -->
+
+    <footer class="container">
+        <div class="site-footer" role="contentinfo">
+            <div class="copyright left mobile-block">
+                    © 2015
+                    <span title="tarda">tarda</span>
+                    <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a>
+            </div>
+
+            <ul class="site-footer-links right mobile-hidden">
+                <li>
+                    <a href="javascript:window.scrollTo(0,0)" >TOP</a>
+                </li>
+            </ul>
+            <a href="http://github.com/cpp255/tarda.github.io" target="_blank" aria-label="view source code">
+                <span class="mega-octicon octicon-mark-github" title="GitHub"></span>
+            </a>
+            <ul class="site-footer-links mobile-hidden">
+                
+                <li>
+                    <a href="http://localhost:4000/" title="首页" target="">首页</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/categories/" title="分类" target="">分类</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/links/" title="链接" target="">链接</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/about/" title="关于" target="">关于</a>
+                </li>
+                
+                <li><a href="http://localhost:4000/feed.xml"><span class="octicon octicon-rss" style="color:orange;"></span></a></li>
+            </ul>
+
+        </div>
+    </footer>
+    <!-- / footer -->
+    <script src="http://localhost:4000/assets/vendor/share.js/dist/js/share.min.js"></script>
+    <script src="http://localhost:4000/assets/js/geopattern.js"></script>
+    <script src="http://localhost:4000/assets/js/prism.js"></script>
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/prism.css">
+    <script>
+      jQuery(document).ready(function($) {
+        // geopattern
+        $('.geopattern').each(function(){
+          $(this).geopattern($(this).data('pattern-id'));
+        });
+       // hljs.initHighlightingOnLoad();
+      });
+    </script>
+
+    
+
+    
+
+    
+
+    
+</body>
+</html>

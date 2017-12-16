@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>sql 引发的 dubbo 超时 &mdash; tarda</title>
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/primer-css/css/primer.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/primer-markdown/dist/user-content.min.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/octicons/octicons/octicons.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/collection.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/repo-card.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/sections/repo-list.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/sections/mini-repo-list.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/boxed-group.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/common.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/share.js/dist/css/share.min.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/responsive.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/posts/index.css">
+    <!-- Latest compiled and minified CSS -->
+    
+
+    
+    <link rel="canonical" href="http://localhost:4000/2017/05/21/sql_low_to_dubbo/">
+    <link rel="alternate" type="application/atom+xml" title="tarda" href="http://localhost:4000/feed.xml">
+    <link rel="shortcut icon" href="http://localhost:4000/favicon.ico">
+    
+    <meta property="og:title" content="sql 引发的 dubbo 超时">
+      
+    <meta name="keywords" content="tarda">
+    <meta name="og:keywords" content="tarda">
+      
+    <meta name="description" content="sql 引发的 dubbo 超时最近在对已有项目进行分离，用了 dubbo，分离之后发现有个接口请求超时了，Google 后找到：http://www.cnblogs.com/binyue/p/5380322.html，文章说有两个解决办法：  找出耗时最多的方法，调优。  加大超时时间。">
+    <meta name="og:description" content="sql 引发的 dubbo 超时最近在对已有项目进行分离，用了 dubbo，分离之后发现有个接口请求超时了，Google 后找到：http://www.cnblogs.com/binyue/p/5380322.html，文章说有两个解决办法：  找出耗时最多的方法，调优。  加大超时时间。">
+      
+    
+    
+        
+    
+    <meta property="og:url" content="http://localhost:4000/2017/05/21/sql_low_to_dubbo/">
+    <meta property="og:site_name" content="tarda">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="zh_CN" />
+    
+    <meta property="article:published_time" content="2017-05-21">
+    
+    <script src="http://localhost:4000/assets/vendor/jquery/dist/jquery.min.js"></script>
+    <script src="http://localhost:4000/assets/js/jquery-ui.js"></script>
+    <script type="text/javascript">
+    function toggleMenu() {
+        var nav = document.getElementsByClassName("site-header-nav")[0];
+        if (nav.style.display == "inline-flex") {
+          nav.style.display = "none";
+        } else {
+          nav.style.display = "inline-flex";
+        }
+    }
+    </script>
+</head>
+<body class="" data-mz="">
+    <header class="site-header">
+        <div class="container">
+            <h1><a href="http://localhost:4000/" title="tarda"><span class="octicon octicon-mark-github"></span> tarda</a></h1>
+            <button class="collapsed mobile-visible" type="button" onclick="toggleMenu();">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <nav class="site-header-nav" role="navigation">
+                
+                <a href="http://localhost:4000/" class=" site-header-nav-item" target="" title="首页">首页</a>
+                
+                <a href="http://localhost:4000/categories/" class=" site-header-nav-item" target="" title="分类">分类</a>
+                
+                <a href="http://localhost:4000/links/" class=" site-header-nav-item" target="" title="链接">链接</a>
+                
+                <a href="http://localhost:4000/about/" class=" site-header-nav-item" target="" title="关于">关于</a>
+                
+            </nav>
+        </div>
+    </header>
+    <!-- / header -->
+
+    <section class="collection-head small geopattern" data-pattern-id="sql 引发的 dubbo 超">
+<div class="container">
+  <div class="columns">
+    <div class="column three-fourths">
+      <div class="collection-title">
+        <h1 class="collection-header">sql 引发的 dubbo 超时</h1>
+        <div class="collection-info">
+          
+          <span class="meta-info">
+            <span class="octicon octicon-calendar"></span> 2017/05/21
+          </span>
+          
+          
+          <span class="meta-info">
+            <span class="octicon octicon-file-directory"></span>
+            <a href="http://localhost:4000/categories/#技术分享" title="技术分享">技术分享</a>
+          </span>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+<!-- / .banner -->
+<section class="container content">
+<div class="columns">
+  <div class="column three-fourths" >
+    <article class="article-content markdown-body">
+    <h1 id="sql-引发的-dubbo-超时">sql 引发的 dubbo 超时</h1>
+<hr />
+<p>最近在对已有项目进行分离，用了 dubbo，分离之后发现有个接口请求超时了，Google 后找到：http://www.cnblogs.com/binyue/p/5380322.html，文章说有两个解决办法：</p>
+<ol>
+  <li>找出耗时最多的方法，调优。</li>
+  <li>加大超时时间。</li>
+</ol>
+
+<p>跑代码，调试后发现，一般跑一次接口调用运行查询时间都为 4s+ 了，肯定超时。 <br />
+解决办法：
+1.加大 dubbo 的超时时间：</p>
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;dubbo:reference</span> <span class="na">id=</span><span class="s">"xxDubboService"</span><span class="err"> </span>                 <span class="na">interface=</span><span class="s">"com.xx.service.xxService"</span> <span class="na">version=</span><span class="s">"1.0"</span><span class="err"> </span>                 <span class="na">group=</span><span class="s">"annotationConfig"</span> <span class="na">protocol=</span><span class="s">"dubbo"</span> <span class="na">check=</span><span class="s">"false"</span> <span class="na">timeout=</span><span class="s">"5000"</span><span class="nt">/&gt;</span>
+
+</code></pre></div></div>
+
+<p>dubbo 默认超时时间(timeout)为1s，增加为5s.这时测试已经可以运行，只是等待时间会比较长。</p>
+
+<p>2.调优 <br />
+不满足，继续优化，接口代码中有7次 sql 查询，第一次的 sql 查询出一个列表，列表长度为30，然后一个for循环，每一次循环内部有6次sql查询，打印时间，发现时间都耗在了这个for循环的sql执行上。 <br />
+查看sql代码，sql 的查询都是必要的操作，删除不了。其中，有3个sql操作是通过查询3个表，循序的通过范式获取数据，返回给java，通过在java层进行数据调用，然后再继续调用sql查询；并且每次查询都是获取所有的数据，然后只取了其中的一个属性。</p>
+<h5 id="优化合并sql消减获取列">优化–合并sql，消减获取列</h5>
+<p>把上面提到的3个sql合并成了一个，使用join查询，降低连接次数，并且把sql查询结果集缩小，只收集需要的数据。 <br />
+这次结果效果惊人，查询时间减到了2s以下。这种合并其实还有一个好处，spring 注入生成的dao少了，连接需要的线程少了，jvm 的内存申请也少。</p>
+<h5 id="优化前端把分页值调低">优化–前端把分页值调低</h5>
+<p>分页毕竟没有硬性要求，把前端请求的分页大小改小，之前的为30改为20，时间再缩小到1.2～1.5s左右，可以接受。</p>
+
+<h5 id="优化todo">优化–TODO</h5>
+<p>后期如果继续优化，可以试着对索引方向着手，估计可以再减一两百毫秒。这个业务使用场景并不高，这些工作暂时还没有继续往下深挖，有空了可以继续搞(估计就瞎扯，项目忙起来没有头).</p>
+
+<h3 id="总结">总结</h3>
+<p>分拆成几个子任务在我这个例子中，已经明显消耗太多时间了，再通过这么一个for循环，查询连接，时间消耗更大。但是几个表用 join 的方式消除一些子任务，写法还是得用 EXPLAIN 查看一下，看下查询方式是否得不偿失。</p>
+
+
+    </article>
+    <div class="share">
+      <div class="share-component"></div>
+    </div>
+    <div class="comment">
+      
+
+  
+
+  
+        <div id="gitalk-container"></div>
+        <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+        <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+        <script>
+        var gitalk = new Gitalk({
+            id: '/2017/05/21/sql_low_to_dubbo/',
+            clientID: '73606014c7ae3b527252',
+            clientSecret: 'e9d9d7254aae4c5d6472af0d881b086acd7ab7b5',
+            repo: 'blog-comments',
+            owner: 'cpp255',
+            admin: ['cpp255'],
+            labels: ['gitment'],
+            perPage: 50,
+        })
+        gitalk.render('gitalk-container')
+        </script>
+  
+
+
+    </div>
+  </div>
+  <div class="column one-fourth">
+    
+<h3>Search</h3>
+<div id="site_search">
+    <input type="text" id="search_box" placeholder="Search">
+</div>
+
+<ul id="search_results"></ul>
+
+<link rel="stylesheet" type="text/css" href="http://localhost:4000/assets/css/modules/sidebar-search.css">
+<script src="http://localhost:4000/assets/js/jekyll-search.min.js"></script>
+<script src="http://localhost:4000/assets/js/search.js"></script>
+
+<script type="text/javascript">
+SimpleJekyllSearch({
+    searchInput: document.getElementById('search_box'),
+    resultsContainer: document.getElementById('search_results'),
+    json: 'http://localhost:4000/assets/search_data.json',
+    searchResultTemplate: '<li><a href="{url}" title="{desc}">{title}</a></li>',
+    noResultsText: 'No results found',
+    limit: 10,
+    fuzzy: false,
+    exclude: ['Welcome']
+})
+</script>
+
+    
+
+    
+<h3 class="post-directory-title mobile-hidden">Table of Contents</h3>
+<div id="post-directory-module" class="mobile-hidden">
+  <section class="post-directory">
+  <!-- Links that trigger the jumping -->
+  <!-- Added by javascript below -->
+  <dl></dl>
+  </section>
+</div>
+
+<script src="http://localhost:4000/assets/js/jquery.toc.js"></script>
+
+  </div>
+</div>
+</section>
+<!-- /section.content -->
+
+    <footer class="container">
+        <div class="site-footer" role="contentinfo">
+            <div class="copyright left mobile-block">
+                    © 2015
+                    <span title="tarda">tarda</span>
+                    <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a>
+            </div>
+
+            <ul class="site-footer-links right mobile-hidden">
+                <li>
+                    <a href="javascript:window.scrollTo(0,0)" >TOP</a>
+                </li>
+            </ul>
+            <a href="http://github.com/cpp255/tarda.github.io" target="_blank" aria-label="view source code">
+                <span class="mega-octicon octicon-mark-github" title="GitHub"></span>
+            </a>
+            <ul class="site-footer-links mobile-hidden">
+                
+                <li>
+                    <a href="http://localhost:4000/" title="首页" target="">首页</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/categories/" title="分类" target="">分类</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/links/" title="链接" target="">链接</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/about/" title="关于" target="">关于</a>
+                </li>
+                
+                <li><a href="http://localhost:4000/feed.xml"><span class="octicon octicon-rss" style="color:orange;"></span></a></li>
+            </ul>
+
+        </div>
+    </footer>
+    <!-- / footer -->
+    <script src="http://localhost:4000/assets/vendor/share.js/dist/js/share.min.js"></script>
+    <script src="http://localhost:4000/assets/js/geopattern.js"></script>
+    <script src="http://localhost:4000/assets/js/prism.js"></script>
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/prism.css">
+    <script>
+      jQuery(document).ready(function($) {
+        // geopattern
+        $('.geopattern').each(function(){
+          $(this).geopattern($(this).data('pattern-id'));
+        });
+       // hljs.initHighlightingOnLoad();
+      });
+    </script>
+
+    
+
+    
+
+    
+
+    
+</body>
+</html>

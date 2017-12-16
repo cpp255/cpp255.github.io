@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>Android-Universal-Image-Loader disk 缓存图片更改 &mdash; tarda</title>
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/primer-css/css/primer.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/primer-markdown/dist/user-content.min.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/octicons/octicons/octicons.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/collection.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/repo-card.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/sections/repo-list.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/sections/mini-repo-list.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/components/boxed-group.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/common.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/vendor/share.js/dist/css/share.min.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/responsive.css">
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/posts/index.css">
+    <!-- Latest compiled and minified CSS -->
+    
+
+    
+    <link rel="canonical" href="http://localhost:4000/2015/03/13/android-universal-image-loader(disk_cache_modify)/">
+    <link rel="alternate" type="application/atom+xml" title="tarda" href="http://localhost:4000/feed.xml">
+    <link rel="shortcut icon" href="http://localhost:4000/favicon.ico">
+    
+    <meta property="og:title" content="Android-Universal-Image-Loader disk 缓存图片更改">
+      
+    <meta name="keywords" content="Android,image">
+    <meta name="og:keywords" content="Android,image">
+      
+    <meta name="description" content="Android-Universal-Image-Loader缓存图片更改之前在论坛上看到过介绍 bither-android-lib 这个工程，主要是说 Android 现有的图片缓存机制比较老，效果不好，然后替换成这个工程，作者说有测试过，效果会比较好。我也拿来做测试了，没看出来。想着可以把平时用的图片的加载库替换掉 Android-Universal-Image-Loader。">
+    <meta name="og:description" content="Android-Universal-Image-Loader缓存图片更改之前在论坛上看到过介绍 bither-android-lib 这个工程，主要是说 Android 现有的图片缓存机制比较老，效果不好，然后替换成这个工程，作者说有测试过，效果会比较好。我也拿来做测试了，没看出来。想着可以把平时用的图片的加载库替换掉 Android-Universal-Image-Loader。">
+      
+    
+    
+        
+    
+    <meta property="og:url" content="http://localhost:4000/2015/03/13/android-universal-image-loader(disk_cache_modify)/">
+    <meta property="og:site_name" content="tarda">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="zh_CN" />
+    
+    <meta property="article:published_time" content="2015-03-13">
+    
+    <script src="http://localhost:4000/assets/vendor/jquery/dist/jquery.min.js"></script>
+    <script src="http://localhost:4000/assets/js/jquery-ui.js"></script>
+    <script type="text/javascript">
+    function toggleMenu() {
+        var nav = document.getElementsByClassName("site-header-nav")[0];
+        if (nav.style.display == "inline-flex") {
+          nav.style.display = "none";
+        } else {
+          nav.style.display = "inline-flex";
+        }
+    }
+    </script>
+</head>
+<body class="" data-mz="">
+    <header class="site-header">
+        <div class="container">
+            <h1><a href="http://localhost:4000/" title="tarda"><span class="octicon octicon-mark-github"></span> tarda</a></h1>
+            <button class="collapsed mobile-visible" type="button" onclick="toggleMenu();">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <nav class="site-header-nav" role="navigation">
+                
+                <a href="http://localhost:4000/" class=" site-header-nav-item" target="" title="首页">首页</a>
+                
+                <a href="http://localhost:4000/categories/" class=" site-header-nav-item" target="" title="分类">分类</a>
+                
+                <a href="http://localhost:4000/links/" class=" site-header-nav-item" target="" title="链接">链接</a>
+                
+                <a href="http://localhost:4000/about/" class=" site-header-nav-item" target="" title="关于">关于</a>
+                
+            </nav>
+        </div>
+    </header>
+    <!-- / header -->
+
+    <section class="collection-head small geopattern" data-pattern-id="Android-Univers">
+<div class="container">
+  <div class="columns">
+    <div class="column three-fourths">
+      <div class="collection-title">
+        <h1 class="collection-header">Android-Universal-Image-Loader disk 缓存图片更改</h1>
+        <div class="collection-info">
+          
+          <span class="meta-info">
+            <span class="octicon octicon-calendar"></span> 2015/03/13
+          </span>
+          
+          
+          <span class="meta-info">
+            <span class="octicon octicon-file-directory"></span>
+            <a href="http://localhost:4000/categories/#技术分享" title="技术分享">技术分享</a>
+          </span>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+<!-- / .banner -->
+<section class="container content">
+<div class="columns">
+  <div class="column three-fourths" >
+    <article class="article-content markdown-body">
+    <h1 id="android-universal-image-loader缓存图片更改">Android-Universal-Image-Loader缓存图片更改</h1>
+<hr />
+<p>之前在论坛上看到过介绍 <a href="https://github.com/bither/bither-android-lib">bither-android-lib</a> 这个工程，主要是说 Android 现有的图片缓存机制比较老，效果不好，然后替换成这个工程，作者说有测试过，效果会比较好。我也拿来做测试了，没看出来。想着可以把平时用的图片的加载库替换掉 <a href="https://github.com/nostra13/Android-Universal-Image-Loader">Android-Universal-Image-Loader</a>。</p>
+
+<h3 id="1-修改依赖库中的保存代码">1. 修改依赖库中的保存代码</h3>
+
+<p>1.把 use-libjpeg-trubo-adnroid 工程下 net.bither.util 包下的 NativeUtil.java 拷贝到 Android-Universal-Image-Loader 工程下 library 的工程com.nostra13.universalimageloader.utilsb 包中；</p>
+
+<p>2.找到 com.nostra13.universalimageloader.cache.disc.impl 包下的 BaseDiskCache.java 类，重写其中的两个保存方法(源代码中注释掉的为之前版本库的代码)：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Override
+	public boolean save(String imageUri, InputStream imageStream, IoUtils.CopyListener listener) throws IOException {
+		File imageFile = getFile(imageUri);
+		File tmpFile = new File(imageFile.getAbsolutePath() + TEMP_IMAGE_POSTFIX);
+		boolean loaded = false;
+		try {
+			OutputStream os = new BufferedOutputStream(new FileOutputStream(tmpFile), bufferSize);
+			try {
+//				loaded = IoUtils.copyStream(imageStream, os, listener, bufferSize);
+				// 同样的方式保存，未返回结果标志
+				Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
+				save(imageUri, bitmap);
+			} finally {
+				IoUtils.closeSilently(os);
+			}
+		} finally {
+			if (loaded &amp;&amp; !tmpFile.renameTo(imageFile)) {
+				loaded = false;
+			}
+			if (!loaded) {
+				tmpFile.delete();
+			}
+		}
+		return loaded;
+	}
+
+	@Override
+	public boolean save(String imageUri, Bitmap bitmap) throws IOException {
+		File imageFile = getFile(imageUri);
+		File tmpFile = new File(imageFile.getAbsolutePath() + TEMP_IMAGE_POSTFIX);
+		OutputStream os = new BufferedOutputStream(new FileOutputStream(tmpFile), bufferSize);
+		boolean savedSuccessfully = false;
+		try {
+//			savedSuccessfully = bitmap.compress(compressFormat, compressQuality, os);
+			// 重写图片保存
+			NativeUtil.compressBitmap(bitmap, compressQuality,
+					imageFile.getAbsolutePath(), true);
+		} finally {
+			IoUtils.closeSilently(os);
+			if (savedSuccessfully &amp;&amp; !tmpFile.renameTo(imageFile)) {
+				savedSuccessfully = false;
+			}
+			if (!savedSuccessfully) {
+				tmpFile.delete();
+			}
+		}
+		bitmap.recycle();
+		return savedSuccessfully;
+	}
+</code></pre></div></div>
+
+<h3 id="maven-so-打包">maven .so 打包</h3>
+
+<p>需要把 armeabi/ 下的.so 打包成第三方 .jar 包。</p>
+
+<h5 id="1-mvn-install-so文件">1. mvn install .so文件</h5>
+<p>先把 armeabi/ 文件夹连同下面的 .so 文件拷到当前项目组的 libs/ 下，然后用 install 的方式把环境配置到本地的 maven 环境。我当前有2个 .so 需要配置，命令如下：</p>
+
+<p><strong>libbitherjni.so</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mvn install:install-file -DgroupId=net.bither -DartifactId=libbitherjni -Dversion=v1 -Dfile=/Users/cpp255/git/Android-Universal-Image-Loader/library/libs/armeabi/libbitherjni.so -Dpackaging=so -DgeneratePom=true -Dclassifier=armeabi  
+</code></pre></div></div>
+
+<p><strong>libjpegbither.so</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mvn install:install-file -DgroupId=net.bither -DartifactId=libjpegbither -Dversion=v1 -Dfile=/Users/mac-600672/git/Android-Universal-Image-Loader/library/libs/armeabi/libjpegbither.so -Dpackaging=so -DgeneratePom=true -Dclassifier=armeabi  
+
+</code></pre></div></div>
+
+<p>执行上述命令后会提示 success.</p>
+
+<h5 id="2-配置-pomxml">2. 配置 pom.xml</h5>
+<p>按照步骤1的完成配置后，则可以在 pom.xml 文件中配置这两个包的信息了</p>
+
+<p><strong>libbitherjni.so</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;dependencies&gt;
+	&lt;dependency&gt;
+          &lt;groupId&gt;net.bither&lt;/groupId&gt;
+           &lt;artifactId&gt;libbitherjni&lt;/artifactId&gt;
+           &lt;version&gt;v1&lt;/version&gt;
+           &lt;classifier&gt;armeabi&lt;/classifier&gt;
+            &lt;scope&gt;runtime&lt;/scope&gt;
+            &lt;type&gt;so&lt;/type&gt;
+  	/dependency&gt;
+&lt;/dependencies&gt;
+</code></pre></div></div>
+
+<p><strong>libjpegbither.so</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;dependencies&gt;
+	&lt;dependency&gt;
+          &lt;groupId&gt;net.bither&lt;/groupId&gt;
+           &lt;artifactId&gt;libjpegbither&lt;/artifactId&gt;
+           &lt;version&gt;v1&lt;/version&gt;
+           &lt;classifier&gt;armeabi&lt;/classifier&gt;
+            &lt;scope&gt;runtime&lt;/scope&gt;
+            &lt;type&gt;so&lt;/type&gt;
+  	&lt;/dependency&gt;
+&lt;/dependencies&gt;
+</code></pre></div></div>
+
+<p>然后执行打包命令，整个过程就结束了：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mvn clean package
+</code></pre></div></div>
+
+<p>修改的项目工程为: <a href="https://github.com/cpp255/Android-Universal-Image-Loader">cpp255/Android-Universal-Image-Loader</a></p>
+
+<p>参考：</p>
+
+<p>1.<a href="http://www.mkyong.com/maven/how-to-include-library-manully-into-maven-local-repository/">How To Include Custom Library Into Maven Local Repository?</a></p>
+
+<p>2.<a href="http://keepcleargas.bitbucket.org/android/2014/04/01/using-maven-to-package-android.html">使用maven构建android项目</a></p>
+
+    </article>
+    <div class="share">
+      <div class="share-component"></div>
+    </div>
+    <div class="comment">
+      
+
+  
+
+  
+        <div id="gitalk-container"></div>
+        <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+        <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+        <script>
+        var gitalk = new Gitalk({
+            id: '/2015/03/13/android-universal-image-loader(disk_cache_modify)/',
+            clientID: '73606014c7ae3b527252',
+            clientSecret: 'e9d9d7254aae4c5d6472af0d881b086acd7ab7b5',
+            repo: 'blog-comments',
+            owner: 'cpp255',
+            admin: ['cpp255'],
+            labels: ['gitment'],
+            perPage: 50,
+        })
+        gitalk.render('gitalk-container')
+        </script>
+  
+
+
+    </div>
+  </div>
+  <div class="column one-fourth">
+    
+<h3>Search</h3>
+<div id="site_search">
+    <input type="text" id="search_box" placeholder="Search">
+</div>
+
+<ul id="search_results"></ul>
+
+<link rel="stylesheet" type="text/css" href="http://localhost:4000/assets/css/modules/sidebar-search.css">
+<script src="http://localhost:4000/assets/js/jekyll-search.min.js"></script>
+<script src="http://localhost:4000/assets/js/search.js"></script>
+
+<script type="text/javascript">
+SimpleJekyllSearch({
+    searchInput: document.getElementById('search_box'),
+    resultsContainer: document.getElementById('search_results'),
+    json: 'http://localhost:4000/assets/search_data.json',
+    searchResultTemplate: '<li><a href="{url}" title="{desc}">{title}</a></li>',
+    noResultsText: 'No results found',
+    limit: 10,
+    fuzzy: false,
+    exclude: ['Welcome']
+})
+</script>
+
+    
+
+    
+<h3 class="post-directory-title mobile-hidden">Table of Contents</h3>
+<div id="post-directory-module" class="mobile-hidden">
+  <section class="post-directory">
+  <!-- Links that trigger the jumping -->
+  <!-- Added by javascript below -->
+  <dl></dl>
+  </section>
+</div>
+
+<script src="http://localhost:4000/assets/js/jquery.toc.js"></script>
+
+  </div>
+</div>
+</section>
+<!-- /section.content -->
+
+    <footer class="container">
+        <div class="site-footer" role="contentinfo">
+            <div class="copyright left mobile-block">
+                    © 2015
+                    <span title="tarda">tarda</span>
+                    <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a>
+            </div>
+
+            <ul class="site-footer-links right mobile-hidden">
+                <li>
+                    <a href="javascript:window.scrollTo(0,0)" >TOP</a>
+                </li>
+            </ul>
+            <a href="http://github.com/cpp255/tarda.github.io" target="_blank" aria-label="view source code">
+                <span class="mega-octicon octicon-mark-github" title="GitHub"></span>
+            </a>
+            <ul class="site-footer-links mobile-hidden">
+                
+                <li>
+                    <a href="http://localhost:4000/" title="首页" target="">首页</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/categories/" title="分类" target="">分类</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/links/" title="链接" target="">链接</a>
+                </li>
+                
+                <li>
+                    <a href="http://localhost:4000/about/" title="关于" target="">关于</a>
+                </li>
+                
+                <li><a href="http://localhost:4000/feed.xml"><span class="octicon octicon-rss" style="color:orange;"></span></a></li>
+            </ul>
+
+        </div>
+    </footer>
+    <!-- / footer -->
+    <script src="http://localhost:4000/assets/vendor/share.js/dist/js/share.min.js"></script>
+    <script src="http://localhost:4000/assets/js/geopattern.js"></script>
+    <script src="http://localhost:4000/assets/js/prism.js"></script>
+    <link rel="stylesheet" href="http://localhost:4000/assets/css/globals/prism.css">
+    <script>
+      jQuery(document).ready(function($) {
+        // geopattern
+        $('.geopattern').each(function(){
+          $(this).geopattern($(this).data('pattern-id'));
+        });
+       // hljs.initHighlightingOnLoad();
+      });
+    </script>
+
+    
+
+    
+
+    
+
+    
+</body>
+</html>
