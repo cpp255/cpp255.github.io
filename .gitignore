@@ -1,0 +1,7 @@
+ite/
+*.swp
+*.~vsd
+\#*\#
+*~
+.DS_Store
+Gemfile.lock
