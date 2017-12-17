@@ -14,7 +14,8 @@ Jedis 开启订阅事件的时候是这样的：
 ``` java
 public void psubscribe(final JedisPubSub jedisPubSub,     final String... patterns) { 
 	checkIsInMulti(); 
-	connect(); // 连接server，底层是通过socket进行连接 client.setTimeoutInfinite(); 
+	connect(); // 连接server，底层是通过socket进行连接 
+	client.setTimeoutInfinite(); 
 	jedisPubSub.proceedWithPatterns(client, patterns);  // 主要是这里 
 	client.rollbackTimeout(); 
 }
