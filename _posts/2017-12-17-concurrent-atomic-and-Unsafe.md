@@ -38,10 +38,21 @@ public class AtomicInteger extends Number implements java.io.Serializable {
  private static Unsafe getUnsafeInstance() throws SecurityException,         NoSuchFieldException, IllegalArgumentException, IllegalAccessException {     Field theUnsafeInstance = Unsafe.class.getDeclaredField("theUnsafe");     theUnsafeInstance.setAccessible(true);     return (Unsafe) theUnsafeInstance.get(Unsafe.class); }
 
 // offset 就是具体类的字段内存偏移量
-static {     try {         unsafe = getUnsafeInstance();         offset = unsafe.objectFieldOffset(UnsafeTest.class.getDeclaredField("flag"));     } catch (NoSuchFieldException e) {         e.printStackTrace();     } catch (IllegalAccessException e) {         e.printStackTrace();     } }
+static {     
+    try {     
+        unsafe = getUnsafeInstance(); 
+        offset = unsafe.objectFieldOffset(UnsafeTest.class.getDeclaredField("flag")); 
+    } catch (NoSuchFieldException e) {         
+        e.printStackTrace();    
+    } catch (IllegalAccessException e) { 
+        e.printStackTrace();  
+    } 
+}
 
 // 类似调用 Unsafe 的方法就可以了
-private boolean doSwap(long offset, int expect, int update) {     return unsafe.compareAndSwapInt(this, offset, expect, update); }
+private boolean doSwap(long offset, int expect, int update) {     
+  return unsafe.compareAndSwapInt(this, offset, expect, update); 
+}
 
 ```
  
