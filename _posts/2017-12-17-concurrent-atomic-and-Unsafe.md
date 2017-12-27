@@ -35,7 +35,11 @@ public class AtomicInteger extends Number implements java.io.Serializable {
  并发编程下面有一个类是不能避免的，Unsafe，通过使用该类提供的一系列方法，可以执行更低层次不安全的操作；虽然这个类和它的所有方法都是 puplic 的，但是被限制使用再只有可信任的代码才能获得实例；注释大体是这个意思，应用层代码不提供实例化的方法，得通过以下方法调用      
  
  ``` java
- private static Unsafe getUnsafeInstance() throws SecurityException,         NoSuchFieldException, IllegalArgumentException, IllegalAccessException {     Field theUnsafeInstance = Unsafe.class.getDeclaredField("theUnsafe");     theUnsafeInstance.setAccessible(true);     return (Unsafe) theUnsafeInstance.get(Unsafe.class); }
+ private static Unsafe getUnsafeInstance() throws SecurityException,    NoSuchFieldException, IllegalArgumentException, IllegalAccessException {     
+    Field theUnsafeInstance = Unsafe.class.getDeclaredField("theUnsafe");    
+    theUnsafeInstance.setAccessible(true);    
+    return (Unsafe) theUnsafeInstance.get(Unsafe.class); 
+}
 
 // offset 就是具体类的字段内存偏移量
 static {     
