@@ -7,8 +7,9 @@ tags : Java,Spring,rabbitmq
 published: true
 categories: 技术分享
 ---
-# rabbitmq 延迟队列实现
----
+
+#rabbitmq 延迟队列实现
+-------
 message 先发送到 delayExchange，delayExchange 接收后，根据 binding 的 delayQueue 的 ttl 时间，到期后，再通过 x-dead-letter-exchange 设置的 exchange，把消息发送到 businessExchange，businessExchange 的 businessQueue 接收到消息后就可以实现具体的业务处理。   
 
 **延迟队列定义：**   
@@ -39,8 +40,8 @@ message 先发送到 delayExchange，delayExchange 接收后，根据 binding �
 		<rabbit:binding queue="businessQueue" pattern="#" /> 	
 	</rabbit:bindings> 
 </rabbit:topic-exchange> 
-<rabbit:listener-container 		connection-factory="connectionFactory" concurrency="2" prefetch="2"> 
-	<rabbit:listener ref="businessQueueListener" 					 method="listen" queue-names="businessQueue" /> 
+<rabbit:listener-container 	connection-factory="connectionFactory" concurrency="2" prefetch="2"> 
+	<rabbit:listener ref="businessQueueListener"  method="listen" queue-names="businessQueue" /> 
 </rabbit:listener-container>
 ```
 
