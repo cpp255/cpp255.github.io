@@ -198,11 +198,11 @@ public class CronSequenceGenerator {
 
 **MethodInvokingJobDetailFactoryBean**
 
-​    具体的任务执行 bean 由 之前 3.2.x 版本的 BeanInvokingJobDetailFactoryBean 替换成了 MethodInvokingJobDetailFactoryBean，可配置项也更加丰富。可以指定具体的被调度的类，和被调度类的实例的方法。该类也同样的实现了 FactoryBean 接口。如下是定义了串行的运行 ID 为 wechatSkuExecutor 实例的 execute 方法.
+​    具体的任务执行 bean 由 之前 3.2.x 版本的 BeanInvokingJobDetailFactoryBean 替换成了 MethodInvokingJobDetailFactoryBean，可配置项也更加丰富。可以指定具体的被调度的类，和被调度类的实例的方法。该类也同样的实现了 FactoryBean 接口。如下是定义了串行的运行 ID 为 testSkuExecutor 实例的 execute 方法.
 
 ```xml
 <property name="concurrent" value="false"/>
-		<property name="targetBean" value="wechatSkuExecutor"/>
+		<property name="targetBean" value="testSkuExecutor"/>
 		<property name="targetMethod" value="execute"/>
 ```
 
