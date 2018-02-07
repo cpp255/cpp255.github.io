@@ -493,4 +493,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 }
 ```
 
+servlet 调用堆栈： 
+![](/images/posts/servlet_request.jpg)
+
 
